@@ -99,7 +99,7 @@ export default function QrReader() {
           scanningRef.current = false;
         }
       }, "image/png");
-    }, 600);
+    }, 300);
   };
 
   /* ---------------- FILE HANDLER ---------------- */
