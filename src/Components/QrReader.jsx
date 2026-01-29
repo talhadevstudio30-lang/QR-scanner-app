@@ -31,11 +31,7 @@ export default function QrReader() {
       scanningRef.current = false;
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+        video: { facingMode: { ideal: "environment" } },
       });
 
       streamRef.current = stream;
@@ -52,20 +48,17 @@ export default function QrReader() {
       clearInterval(scanIntervalRef.current);
       scanIntervalRef.current = null;
     }
-
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
-
     if (videoRef.current) videoRef.current.srcObject = null;
   };
 
-  /* ---------------- FAST CAMERA SCAN ---------------- */
+  /* ---------------- CAMERA SCAN ---------------- */
   const startScanning = () => {
     scanIntervalRef.current = setInterval(() => {
-      if (!videoRef.current || qrFoundRef.current || scanningRef.current)
-        return;
+      if (!videoRef.current || qrFoundRef.current || scanningRef.current) return;
 
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -83,7 +76,6 @@ export default function QrReader() {
 
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-
         scanningRef.current = true;
 
         const formData = new FormData();
@@ -110,14 +102,14 @@ export default function QrReader() {
     }, 600);
   };
 
-  /* ---------------- FILE UPLOAD ---------------- */
+  /* ---------------- FILE HANDLER ---------------- */
   const handleFile = async (file) => {
-    if (!file) return;
+    if (!file || !file.type.startsWith("image/")) return;
 
     stopCamera();
     setMode("upload");
-    setQrData(null);
     setError("");
+    setQrData(null);
     setPreview(URL.createObjectURL(file));
     setLoading(true);
 
@@ -143,12 +135,22 @@ export default function QrReader() {
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
-      handleFile(file);
-    }
+    handleFile(file);
   };
 
   const handleDragOver = (e) => e.preventDefault();
+
+  /* ---------------- SHARE ---------------- */
+  const handleShare = async () => {
+    if (!navigator.share) return alert("Sharing not supported");
+
+    try {
+      await navigator.share({
+        title: "QR Scan Result",
+        text: qrData,
+      });
+    } catch {}
+  };
 
   /* ---------------- CLEAR ---------------- */
   const handleClear = () => {
@@ -159,24 +161,8 @@ export default function QrReader() {
     qrFoundRef.current = false;
     scanningRef.current = false;
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    if (mode === "camera") {
-      startCamera(); // restart camera instantly
-    }
-  };
-  /* ---------------- SHARE ---------------- */
-  const handleShare = async () => {
-    if (!navigator.share) {
-      alert("Sharing not supported on this device");
-      return;
-    }
-    try {
-      await navigator.share({ title: "QR Scan Result", text: qrData, });
-    }
-    catch { }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (mode === "camera") startCamera();
   };
 
   const isURL = qrData?.startsWith("http");
@@ -196,8 +182,9 @@ export default function QrReader() {
             setPreview(null);
             setQrData(null);
           }}
-          className={`px-4 py-2 rounded ${mode === "camera" ? "bg-blue-600 text-white" : "bg-gray-200"
-            }`}
+          className={`px-4 py-2 rounded ${
+            mode === "camera" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
         >
           📷 Camera
         </button>
@@ -207,19 +194,20 @@ export default function QrReader() {
             setMode("upload");
             setQrData(null);
           }}
-          className={`px-4 py-2 rounded ${mode === "upload" ? "bg-blue-600 text-white" : "bg-gray-200"
-            }`}
+          className={`px-4 py-2 rounded ${
+            mode === "upload" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
         >
           📁 Upload
         </button>
       </div>
 
-      {/* CAMERA MODE */}
+      {/* CAMERA */}
       {mode === "camera" && (
         <>
           <div className="rounded-lg overflow-hidden bg-black">
             <video ref={videoRef} autoPlay playsInline className="w-full" />
-            <canvas ref={canvasRef} className="hidden" />
+            <canvas ref={canvasRef} className="block" />
           </div>
 
           <div className="flex justify-center gap-3 mt-4">
@@ -239,13 +227,13 @@ export default function QrReader() {
         </>
       )}
 
-      {/* UPLOAD MODE */}
+      {/* UPLOAD + DRAG */}
       {mode === "upload" && (
         <div
           onClick={() => fileInputRef.current.click()}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
-          className="mt-4 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
+          className="mt-4 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50"
         >
           <input
             ref={fileInputRef}
@@ -265,7 +253,6 @@ export default function QrReader() {
         </div>
       )}
 
-      {/* STATUS */}
       {loading && <p className="mt-4 text-center">Scanning…</p>}
       {error && <p className="mt-4 text-red-600 text-center">{error}</p>}
 
@@ -274,7 +261,7 @@ export default function QrReader() {
         <div className="mt-6 bg-green-50 p-4 rounded-lg">
           <p className="break-all font-mono">{qrData}</p>
 
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4 flex-wrap">
             {isURL && (
               <a
                 href={qrData}
@@ -292,12 +279,17 @@ export default function QrReader() {
               Copy
             </button>
             <button
+              onClick={handleShare}
+              className="px-4 py-2 bg-purple-600 text-white rounded"
+            >
+              Share
+            </button>
+            <button
               onClick={handleClear}
               className="px-4 py-2 bg-gray-600 text-white rounded"
             >
               Clear
             </button>
-            <button onClick={handleShare}>hello</button>
           </div>
         </div>
       )}
