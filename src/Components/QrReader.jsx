@@ -2,12 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 export default function QrReader() {
-  const [mode, setMode] = useState("camera");
+  const [mode, setMode] = useState("camera"); // camera | upload
   const [qrData, setQrData] = useState(null);
   const [error, setError] = useState("");
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
   const scanIntervalRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -23,6 +26,7 @@ export default function QrReader() {
   const startCamera = async () => {
     try {
       setError("");
+      setQrData(null);
       qrFoundRef.current = false;
       scanningRef.current = false;
 
@@ -37,7 +41,7 @@ export default function QrReader() {
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
 
-      setTimeout(startScanning, 800);
+      setTimeout(startScanning, 700);
     } catch {
       setError("Camera permission denied");
     }
@@ -57,14 +61,10 @@ export default function QrReader() {
     if (videoRef.current) videoRef.current.srcObject = null;
   };
 
-  /* ---------------- FAST SCANNING ---------------- */
+  /* ---------------- FAST CAMERA SCAN ---------------- */
   const startScanning = () => {
     scanIntervalRef.current = setInterval(() => {
-      if (
-        !videoRef.current ||
-        qrFoundRef.current ||
-        scanningRef.current
-      )
+      if (!videoRef.current || qrFoundRef.current || scanningRef.current)
         return;
 
       const video = videoRef.current;
@@ -79,7 +79,6 @@ export default function QrReader() {
 
       canvas.width = size;
       canvas.height = size;
-
       ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
 
       canvas.toBlob(async (blob) => {
@@ -97,7 +96,6 @@ export default function QrReader() {
           );
 
           const data = res?.data?.[0]?.symbol?.[0]?.data;
-
           if (data) {
             qrFoundRef.current = true;
             setQrData(data);
@@ -109,7 +107,76 @@ export default function QrReader() {
           scanningRef.current = false;
         }
       }, "image/png");
-    }, 600); // FAST SCAN
+    }, 600);
+  };
+
+  /* ---------------- FILE UPLOAD ---------------- */
+  const handleFile = async (file) => {
+    if (!file) return;
+
+    stopCamera();
+    setMode("upload");
+    setQrData(null);
+    setError("");
+    setPreview(URL.createObjectURL(file));
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(
+        "https://api.qrserver.com/v1/read-qr-code/",
+        formData
+      );
+
+      const data = res?.data?.[0]?.symbol?.[0]?.data;
+      data ? setQrData(data) : setError("No QR code found");
+    } catch {
+      setError("Failed to read QR");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- DRAG & DROP ---------------- */
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      handleFile(file);
+    }
+  };
+
+  const handleDragOver = (e) => e.preventDefault();
+
+  /* ---------------- CLEAR ---------------- */
+  const handleClear = () => {
+    setQrData(null);
+    setError("");
+    setPreview(null);
+    setLoading(false);
+    qrFoundRef.current = false;
+    scanningRef.current = false;
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    if (mode === "camera") {
+      startCamera(); // restart camera instantly
+    }
+  };
+  /* ---------------- SHARE ---------------- */
+  const handleShare = async () => {
+    if (!navigator.share) {
+      alert("Sharing not supported on this device");
+      return;
+    }
+    try {
+      await navigator.share({ title: "QR Scan Result", text: qrData, });
+    }
+    catch { }
   };
 
   const isURL = qrData?.startsWith("http");
@@ -121,40 +188,93 @@ export default function QrReader() {
         ⚡ Fast QR Scanner
       </h1>
 
-      <div className="rounded-lg overflow-hidden flex justify-center items-center">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className="w-60 h-55 object-cover border-2 border-amber-300"
-        />
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
-
-      <div className="flex justify-center gap-3 mt-4">
+      {/* MODE SWITCH */}
+      <div className="flex justify-center gap-3 mb-5">
         <button
-          onClick={startCamera}
-          className="px-6 py-2 bg-green-600 text-white rounded-lg"
+          onClick={() => {
+            setMode("camera");
+            setPreview(null);
+            setQrData(null);
+          }}
+          className={`px-4 py-2 rounded ${mode === "camera" ? "bg-blue-600 text-white" : "bg-gray-200"
+            }`}
         >
-          Start
+          📷 Camera
         </button>
         <button
-          onClick={stopCamera}
-          className="px-6 py-2 bg-red-600 text-white rounded-lg"
+          onClick={() => {
+            stopCamera();
+            setMode("upload");
+            setQrData(null);
+          }}
+          className={`px-4 py-2 rounded ${mode === "upload" ? "bg-blue-600 text-white" : "bg-gray-200"
+            }`}
         >
-          Stop
+          📁 Upload
         </button>
       </div>
 
-      {error && (
-        <p className="mt-4 text-red-600 text-center">{error}</p>
+      {/* CAMERA MODE */}
+      {mode === "camera" && (
+        <>
+          <div className="rounded-lg overflow-hidden bg-black">
+            <video ref={videoRef} autoPlay playsInline className="w-full" />
+            <canvas ref={canvasRef} className="hidden" />
+          </div>
+
+          <div className="flex justify-center gap-3 mt-4">
+            <button
+              onClick={startCamera}
+              className="px-6 py-2 bg-green-600 text-white rounded"
+            >
+              Start
+            </button>
+            <button
+              onClick={stopCamera}
+              className="px-6 py-2 bg-red-600 text-white rounded"
+            >
+              Stop
+            </button>
+          </div>
+        </>
       )}
 
+      {/* UPLOAD MODE */}
+      {mode === "upload" && (
+        <div
+          onClick={() => fileInputRef.current.click()}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          className="mt-4 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer"
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
+
+          {preview ? (
+            <img src={preview} className="mx-auto max-w-xs" />
+          ) : (
+            <p className="text-gray-500">
+              Click or drag & drop a QR image
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* STATUS */}
+      {loading && <p className="mt-4 text-center">Scanning…</p>}
+      {error && <p className="mt-4 text-red-600 text-center">{error}</p>}
+
+      {/* RESULT */}
       {qrData && (
         <div className="mt-6 bg-green-50 p-4 rounded-lg">
           <p className="break-all font-mono">{qrData}</p>
 
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-4">
             {isURL && (
               <a
                 href={qrData}
@@ -162,7 +282,7 @@ export default function QrReader() {
                 rel="noreferrer"
                 className="px-4 py-2 bg-green-600 text-white rounded"
               >
-                Open Link
+                Open
               </a>
             )}
             <button
@@ -171,13 +291,16 @@ export default function QrReader() {
             >
               Copy
             </button>
+            <button
+              onClick={handleClear}
+              className="px-4 py-2 bg-gray-600 text-white rounded"
+            >
+              Clear
+            </button>
+            <button onClick={handleShare}>hello</button>
           </div>
         </div>
       )}
-
-      <p className="text-center text-gray-500 text-sm mt-4">
-        Point the camera at a QR code — auto scan is live ⚡
-      </p>
     </div>
   );
 }
