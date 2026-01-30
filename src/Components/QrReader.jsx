@@ -9,14 +9,13 @@ export default function QrReader() {
   const [loading, setLoading] = useState(false);
 
   const videoRef = useRef(null);
-  // overlay canvas shown on top of the video (shows borders, guides)
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-  const scanIntervalRef = useRef(null);
   const streamRef = useRef(null);
+  const scanIntervalRef = useRef(null);
 
-  const qrFoundRef = useRef(false);
   const scanningRef = useRef(false);
+  const qrFoundRef = useRef(false);
 
   /* ---------------- CLEANUP ---------------- */
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function QrReader() {
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
 
-      setTimeout(startScanning, 300);
+      setTimeout(startScanning, 600);
     } catch {
       setError("Camera permission denied");
     }
@@ -56,79 +55,28 @@ export default function QrReader() {
     if (videoRef.current) videoRef.current.srcObject = null;
   };
 
-  /* ---------------- CAMERA SCAN ---------------- */
+  /* ---------------- SCANNING ---------------- */
   const startScanning = () => {
     scanIntervalRef.current = setInterval(() => {
-      if (!videoRef.current || qrFoundRef.current || scanningRef.current) return;
+      if (!videoRef.current || scanningRef.current || qrFoundRef.current) return;
 
       const video = videoRef.current;
-      // ensure the video has dimensions
       if (!video.videoWidth || !video.videoHeight) return;
 
-      // capture square area from the native video frame using an offscreen canvas
       const size = Math.min(video.videoWidth, video.videoHeight) * 0.45;
-      const sx = (video.videoWidth - size) / 1;
-      const sy = (video.videoHeight - size) / 1;
+      const sx = (video.videoWidth - size) / 2;
+      const sy = (video.videoHeight - size) / 2;
 
+      // capture center square
       const capture = document.createElement("canvas");
       capture.width = size;
       capture.height = size;
-      const capCtx = capture.getContext("2d");
-      capCtx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
+      capture
+        .getContext("2d")
+        .drawImage(video, sx, sy, size, size, 0, 0, size, size);
 
-      // draw overlay (borders / guides) on the visible canvas
-      const overlay = canvasRef.current;
-      if (overlay) {
-        // size overlay to match displayed video size
-        const vw = video.clientWidth || video.videoWidth;
-        const vh = video.clientHeight || video.videoHeight;
-        overlay.width = vw;
-        overlay.height = vh;
-        const octx = overlay.getContext("2d");
-        octx.clearRect(0, 0, vw, vh);
+      drawOverlay();
 
-        // compute the displayed capture rect (map native coords to displayed coords)
-        const scaleX = (video.clientWidth || vw) / video.videoWidth;
-        const scaleY = (video.clientHeight || vh) / video.videoHeight;
-        const dx = sx * scaleX;
-        const dy = sy * scaleY;
-        const dsize = size * Math.min(scaleX, scaleY);
-
-        // dim the outside area
-        octx.fillStyle = "rgba(0,0,0,0.35)";
-        octx.fillRect(0, 0, vw, vh);
-        octx.clearRect(dx, dy, dsize, dsize);
-
-        // draw border
-        octx.strokeStyle = "#34D399"; // green-400
-        octx.lineWidth = Math.max(2, Math.round(Math.min(vw, vh) * 0.003));
-        octx.strokeRect(dx + 0.5, dy + 0.5, dsize - 1, dsize - 1);
-
-        // corner markers
-        const cornerLen = Math.max(16, dsize * 0.08);
-        octx.lineWidth = Math.max(3, Math.round(octx.lineWidth * 1.2));
-        const drawCorner = (x1, y1, x2, y2) => {
-          octx.beginPath();
-          octx.moveTo(x1, y1);
-          octx.lineTo(x2, y2);
-          octx.stroke();
-        };
-        octx.strokeStyle = "#10B981"; // green-500
-        // TL
-        drawCorner(dx, dy + cornerLen, dx, dy);
-        drawCorner(dx, dy, dx + cornerLen, dy);
-        // TR
-        drawCorner(dx + dsize, dy + cornerLen, dx + dsize, dy);
-        drawCorner(dx + dsize - cornerLen, dy, dx + dsize, dy);
-        // BL
-        drawCorner(dx, dy + dsize - cornerLen, dx, dy + dsize);
-        drawCorner(dx, dy + dsize, dx + cornerLen, dy + dsize);
-        // BR
-        drawCorner(dx + dsize, dy + dsize - cornerLen, dx + dsize, dy + dsize);
-        drawCorner(dx + dsize - cornerLen, dy + dsize, dx + dsize, dy + dsize);
-      }
-
-      // convert capture canvas to blob and send to API
       capture.toBlob(async (blob) => {
         if (!blob) return;
         scanningRef.current = true;
@@ -143,7 +91,6 @@ export default function QrReader() {
           );
 
           const data = res?.data?.[0]?.symbol?.[0]?.data;
-          console.log(data);
           if (data) {
             qrFoundRef.current = true;
             setQrData(data);
@@ -155,18 +102,61 @@ export default function QrReader() {
           scanningRef.current = false;
         }
       }, "image/png");
-    }, 100);
+    }, 120);
   };
 
-  /* ---------------- FILE HANDLER ---------------- */
+  /* ---------------- CANVAS OVERLAY ---------------- */
+  const drawOverlay = () => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    if (!canvas || !video) return;
+
+    const boxSize = Math.min(video.clientWidth, video.clientHeight) * 0.55;
+    canvas.width = boxSize;
+    canvas.height = boxSize;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, boxSize, boxSize);
+
+    // border
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, boxSize - 4, boxSize - 4);
+
+    // corners
+    const c = boxSize * 0.15;
+    ctx.lineWidth = 6;
+
+    const corner = (x1, y1, x2, y2) => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    };
+
+    // TL
+    corner(0, c, 0, 0);
+    corner(0, 0, c, 0);
+    // TR
+    corner(boxSize, c, boxSize, 0);
+    corner(boxSize - c, 0, boxSize, 0);
+    // BL
+    corner(0, boxSize - c, 0, boxSize);
+    corner(0, boxSize, c, boxSize);
+    // BR
+    corner(boxSize, boxSize - c, boxSize, boxSize);
+    corner(boxSize - c, boxSize, boxSize, boxSize);
+  };
+
+  /* ---------------- FILE ---------------- */
   const handleFile = async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
 
     stopCamera();
     setMode("upload");
-    setError("");
-    setQrData(null);
     setPreview(URL.createObjectURL(file));
+    setQrData(null);
+    setError("");
     setLoading(true);
 
     const formData = new FormData();
@@ -177,10 +167,8 @@ export default function QrReader() {
         "https://api.qrserver.com/v1/read-qr-code/",
         formData
       );
-
       const data = res?.data?.[0]?.symbol?.[0]?.data;
       data ? setQrData(data) : setError("No QR code found");
-      console.log(data)
     } catch {
       setError("Failed to read QR");
     } finally {
@@ -188,38 +176,18 @@ export default function QrReader() {
     }
   };
 
-  /* ---------------- DRAG & DROP ---------------- */
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    handleFile(file);
-  };
-
-  const handleDragOver = (e) => e.preventDefault();
-
-  /* ---------------- SHARE ---------------- */
-  const handleShare = async () => {
-    if (!navigator.share) return alert("Sharing not supported");
-
-    try {
-      await navigator.share({
-        title: "QR Scan Result",
-        text: qrData,
-      });
-    } catch {}
-  };
-
-  /* ---------------- CLEAR ---------------- */
+  /* ---------------- HELPERS ---------------- */
   const handleClear = () => {
     setQrData(null);
     setError("");
     setPreview(null);
-    setLoading(false);
-    qrFoundRef.current = false;
-    scanningRef.current = false;
-
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (mode === "camera") startCamera();
+  };
+
+  const handleShare = async () => {
+    if (!navigator.share) return alert("Sharing not supported");
+    await navigator.share({ title: "QR Result", text: qrData });
   };
 
   const isURL = qrData?.startsWith("http");
@@ -234,11 +202,7 @@ export default function QrReader() {
       {/* MODE SWITCH */}
       <div className="flex justify-center gap-3 mb-5">
         <button
-          onClick={() => {
-            setMode("camera");
-            setPreview(null);
-            setQrData(null);
-          }}
+          onClick={() => setMode("camera")}
           className={`px-4 py-2 rounded ${
             mode === "camera" ? "bg-blue-600 text-white" : "bg-gray-200"
           }`}
@@ -249,7 +213,6 @@ export default function QrReader() {
           onClick={() => {
             stopCamera();
             setMode("upload");
-            setQrData(null);
           }}
           className={`px-4 py-2 rounded ${
             mode === "upload" ? "bg-blue-600 text-white" : "bg-gray-200"
@@ -262,12 +225,18 @@ export default function QrReader() {
       {/* CAMERA */}
       {mode === "camera" && (
         <>
-          <div className="rounded-lg overflow-hidden bg-black relative">
-            <video ref={videoRef} autoPlay playsInline className="w-full block" />
-            {/* overlay canvas sits on top of video and shows borders/guides */}
+          <div className="relative rounded-lg overflow-hidden bg-black">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full block"
+            />
             <canvas
               ref={canvasRef}
-              className="absolute inset-0 w-full h-full pointer-events-none"
+              className="absolute top-1/2 left-1/2 
+                         -translate-x-1/2 -translate-y-1/2 
+                         pointer-events-none"
             />
           </div>
 
@@ -288,12 +257,15 @@ export default function QrReader() {
         </>
       )}
 
-      {/* UPLOAD + DRAG */}
+      {/* UPLOAD */}
       {mode === "upload" && (
         <div
           onClick={() => fileInputRef.current.click()}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleFile(e.dataTransfer.files[0]);
+          }}
+          onDragOver={(e) => e.preventDefault()}
           className="mt-4 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50"
         >
           <input
@@ -307,9 +279,7 @@ export default function QrReader() {
           {preview ? (
             <img src={preview} className="mx-auto max-w-xs" />
           ) : (
-            <p className="text-gray-500">
-              Click or drag & drop a QR image
-            </p>
+            <p className="text-gray-500">Click or drag & drop QR image</p>
           )}
         </div>
       )}
