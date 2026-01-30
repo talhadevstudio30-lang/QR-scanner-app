@@ -9,6 +9,7 @@ export default function QrReader() {
   const [loading, setLoading] = useState(false);
 
   const videoRef = useRef(null);
+  // overlay canvas shown on top of the video (shows borders, guides)
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const scanIntervalRef = useRef(null);
@@ -61,20 +62,74 @@ export default function QrReader() {
       if (!videoRef.current || qrFoundRef.current || scanningRef.current) return;
 
       const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
+      // ensure the video has dimensions
+      if (!video.videoWidth || !video.videoHeight) return;
 
-      if (!video.videoWidth) return;
-
+      // capture square area from the native video frame using an offscreen canvas
       const size = Math.min(video.videoWidth, video.videoHeight) * 0.45;
-      const sx = (video.videoWidth - size) / 2;
-      const sy = (video.videoHeight - size) / 2;
+      const sx = (video.videoWidth - size) / 1;
+      const sy = (video.videoHeight - size) / 1;
 
-      canvas.width = size;
-      canvas.height = size;
-      ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
+      const capture = document.createElement("canvas");
+      capture.width = size;
+      capture.height = size;
+      const capCtx = capture.getContext("2d");
+      capCtx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
 
-      canvas.toBlob(async (blob) => {
+      // draw overlay (borders / guides) on the visible canvas
+      const overlay = canvasRef.current;
+      if (overlay) {
+        // size overlay to match displayed video size
+        const vw = video.clientWidth || video.videoWidth;
+        const vh = video.clientHeight || video.videoHeight;
+        overlay.width = vw;
+        overlay.height = vh;
+        const octx = overlay.getContext("2d");
+        octx.clearRect(0, 0, vw, vh);
+
+        // compute the displayed capture rect (map native coords to displayed coords)
+        const scaleX = (video.clientWidth || vw) / video.videoWidth;
+        const scaleY = (video.clientHeight || vh) / video.videoHeight;
+        const dx = sx * scaleX;
+        const dy = sy * scaleY;
+        const dsize = size * Math.min(scaleX, scaleY);
+
+        // dim the outside area
+        octx.fillStyle = "rgba(0,0,0,0.35)";
+        octx.fillRect(0, 0, vw, vh);
+        octx.clearRect(dx, dy, dsize, dsize);
+
+        // draw border
+        octx.strokeStyle = "#34D399"; // green-400
+        octx.lineWidth = Math.max(2, Math.round(Math.min(vw, vh) * 0.003));
+        octx.strokeRect(dx + 0.5, dy + 0.5, dsize - 1, dsize - 1);
+
+        // corner markers
+        const cornerLen = Math.max(16, dsize * 0.08);
+        octx.lineWidth = Math.max(3, Math.round(octx.lineWidth * 1.2));
+        const drawCorner = (x1, y1, x2, y2) => {
+          octx.beginPath();
+          octx.moveTo(x1, y1);
+          octx.lineTo(x2, y2);
+          octx.stroke();
+        };
+        octx.strokeStyle = "#10B981"; // green-500
+        // TL
+        drawCorner(dx, dy + cornerLen, dx, dy);
+        drawCorner(dx, dy, dx + cornerLen, dy);
+        // TR
+        drawCorner(dx + dsize, dy + cornerLen, dx + dsize, dy);
+        drawCorner(dx + dsize - cornerLen, dy, dx + dsize, dy);
+        // BL
+        drawCorner(dx, dy + dsize - cornerLen, dx, dy + dsize);
+        drawCorner(dx, dy + dsize, dx + cornerLen, dy + dsize);
+        // BR
+        drawCorner(dx + dsize, dy + dsize - cornerLen, dx + dsize, dy + dsize);
+        drawCorner(dx + dsize - cornerLen, dy + dsize, dx + dsize, dy + dsize);
+      }
+
+      // convert capture canvas to blob and send to API
+      capture.toBlob(async (blob) => {
         if (!blob) return;
         scanningRef.current = true;
 
@@ -88,6 +143,7 @@ export default function QrReader() {
           );
 
           const data = res?.data?.[0]?.symbol?.[0]?.data;
+          console.log(data);
           if (data) {
             qrFoundRef.current = true;
             setQrData(data);
@@ -124,6 +180,7 @@ export default function QrReader() {
 
       const data = res?.data?.[0]?.symbol?.[0]?.data;
       data ? setQrData(data) : setError("No QR code found");
+      console.log(data)
     } catch {
       setError("Failed to read QR");
     } finally {
@@ -205,9 +262,13 @@ export default function QrReader() {
       {/* CAMERA */}
       {mode === "camera" && (
         <>
-          <div className="rounded-lg overflow-hidden bg-black">
-            <video ref={videoRef} autoPlay playsInline className="w-full" />
-            <canvas ref={canvasRef} className="block" />
+          <div className="rounded-lg overflow-hidden bg-black relative">
+            <video ref={videoRef} autoPlay playsInline className="w-full block" />
+            {/* overlay canvas sits on top of video and shows borders/guides */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full pointer-events-none"
+            />
           </div>
 
           <div className="flex justify-center gap-3 mt-4">
