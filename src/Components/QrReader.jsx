@@ -155,7 +155,7 @@ export default function QrReader() {
           scanningRef.current = false;
         }
       }, "image/png");
-    }, 300);
+    }, 100);
   };
 
   /* ---------------- FILE HANDLER ---------------- */
