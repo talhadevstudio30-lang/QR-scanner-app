@@ -38,7 +38,7 @@ export default function QrReader() {
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
 
-      setTimeout(startScanning, 700);
+      setTimeout(startScanning, 300);
     } catch {
       setError("Camera permission denied");
     }
