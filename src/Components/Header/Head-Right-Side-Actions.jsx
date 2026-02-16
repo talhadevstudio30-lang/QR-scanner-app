@@ -26,8 +26,8 @@ function Head_Right_Side_Actions({
                 >
                     <span className="flex items-center gap-1">
                         <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-                            <path fill="none" stroke="currentColor" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            <path fill="none" stroke="currentColor" stroke-width="2" d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <path fill="none" stroke="currentColor" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            <path fill="none" stroke="currentColor" strokeWidth="2" d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg></span>
                         Contact
                     </span>
