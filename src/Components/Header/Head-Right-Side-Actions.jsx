@@ -1,11 +1,9 @@
 import React from 'react'
+import { Link } from "react-router-dom";
 
 function Head_Right_Side_Actions({
     // Handler props
-    handleLinkClick,
-
-    // Link component
-    Link
+    handleLinkClick
 }) {
     return (
         <>

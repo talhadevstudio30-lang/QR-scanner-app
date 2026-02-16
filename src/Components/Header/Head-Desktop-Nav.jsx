@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from "react-router-dom";
 function Head_Desktop_Nav({
     // Data props
     navItems,
@@ -7,10 +8,7 @@ function Head_Desktop_Nav({
     handleLinkClick,
 
     // Location props
-    location,
-
-    // Link component
-    Link
+    location
 }) {
 
     return (

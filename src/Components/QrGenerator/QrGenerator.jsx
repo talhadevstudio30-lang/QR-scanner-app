@@ -23,7 +23,7 @@ export default function QrGenerator() {
 
     // History state
     const [history, setHistory] = useState([]);
-    const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
+    const [selectedHistoryItem] = useState(null);
 
     // Customization state
     const [customization, setCustomization] = useState({
@@ -136,7 +136,7 @@ export default function QrGenerator() {
             size: size,
             qrUrl: generatedUrl,
             customization: { ...customization },
-            details: getHistoryDetails(dataToEncode)
+            details: getHistoryDetails()
         };
 
         const newHistory = [historyItem, ...history.slice(0, 49)];
@@ -144,7 +144,7 @@ export default function QrGenerator() {
     };
 
     // Function to get detailed information for history item
-    const getHistoryDetails = (dataToEncode) => {
+    const getHistoryDetails = () => {
         switch (activeTab) {
             case "EMAIL":
                 return {

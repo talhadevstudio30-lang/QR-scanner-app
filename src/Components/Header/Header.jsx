@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Head_Mobile_Menu from "./Head-Mobile-Menu";
 import Head_Logo from "./Head-Logo";
 import Head_Right_Side_Actions from "./Head-Right-Side-Actions";
@@ -11,6 +11,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(true);
   const [scrollDirection, setScrollDirection] = useState("up");
+  const [scrollProgress, setScrollProgress] = useState(0);
   const location = useLocation();
 
   const lastScrollY = useRef(0);
@@ -52,6 +53,7 @@ export default function Header() {
 
       // Set scrolled state for shadow effect
       setScrolled(currentScrollY > 5);
+      setScrollProgress(Math.min(100, Math.max(0, (currentScrollY / 300) * 100)));
 
       lastScrollY.current = currentScrollY;
     };
@@ -59,11 +61,6 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrollDirection]);
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -103,7 +100,7 @@ export default function Header() {
 
             {/* Logo */}
             <div>
-              <Head_Logo handleLinkClick={handleLinkClick} Link={Link} />
+              <Head_Logo handleLinkClick={handleLinkClick} />
             </div>
 
             {/* Desktop Navigation */}
@@ -117,9 +114,6 @@ export default function Header() {
 
                 // Location props
                 location={location}
-
-                // Link component
-                Link={Link}
               />
             </div>
 
@@ -128,9 +122,6 @@ export default function Header() {
               <Head_Right_Side_Actions
                 // Handler props
                 handleLinkClick={handleLinkClick}
-
-                // Link component
-                Link={Link}
               />
             </div>
 
@@ -152,7 +143,7 @@ export default function Header() {
             <div
               className="h-full bg-linear-to-r from-blue-600 to-blue-500 transition-all duration-100"
               style={{
-                width: `${Math.min(100, (lastScrollY.current / 300) * 100)}%`
+                width: `${scrollProgress}%`
               }}
             />
           </div>
@@ -184,9 +175,6 @@ export default function Header() {
 
           // Location props
           location={location}
-
-          // Link component
-          Link={Link}
         />
       </div>
     </>

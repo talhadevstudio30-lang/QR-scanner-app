@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from "react-router-dom";
 import Header_Mobile_Menu_Footer from "./Mobile-Menu-Footer";
 
 function Head_Mobile_Menu({
@@ -12,10 +13,7 @@ function Head_Mobile_Menu({
     navItems,
 
     // Location props
-    location,
-
-    // Link component
-    Link
+    location
 }) {
     // ... component code ...
 

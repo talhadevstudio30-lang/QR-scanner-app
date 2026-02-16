@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import QrRead_Header from "./QrRead-Header";
 import QrRead_Scan_Result from "./QrRead-Scan-Result";
@@ -41,7 +41,7 @@ export default function QrReader() {
   // Save history to localStorage whenever it changes
   useEffect(() => {
     saveHistoryToStorage();
-  }, [scanHistory]);
+  }, [saveHistoryToStorage]);
 
   // Load history from localStorage
   const loadHistoryFromStorage = () => {
@@ -64,7 +64,7 @@ export default function QrReader() {
   };
 
   // Save history to localStorage
-  const saveHistoryToStorage = () => {
+  const saveHistoryToStorage = useCallback(() => {
     try {
       if (scanHistory.length > 0) {
         const historyToSave = JSON.stringify(scanHistory);
@@ -78,7 +78,7 @@ export default function QrReader() {
     } catch (e) {
       console.error("Failed to save history to localStorage:", e);
     }
-  };
+  }, [scanHistory]);
 
   // Detect QR code type
   const detectQRType = (data) => {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     Clock,
 } from "lucide-react";
@@ -26,7 +26,6 @@ function QrGene_History({ history, setHistory, deleteHistoryItem, History_Info_B
         if (window.confirm("Are you sure you want to clear all history?")) {
             setHistory([]);
             localStorage.removeItem("qrHistory");
-            showNotification("History cleared");
         }
     };
 

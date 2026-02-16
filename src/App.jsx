@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import QrReader from "./Components/QrReader/QrReader";
 import Header from "./Components/Header/Header";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';

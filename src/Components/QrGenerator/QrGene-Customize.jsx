@@ -3,7 +3,7 @@ import {
     Palette,
 } from "lucide-react";
 
-function QrGene_Customize({ customization, resetCustomization, handleThemeChange }) {
+function QrGene_Customize({ customization, resetCustomization, handleThemeChange, handleMarginChange }) {
 
     // Margin options
     const marginOptions = [
