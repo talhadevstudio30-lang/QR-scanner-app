@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import QrRead_Header from "./QrRead-Header";
 import QrRead_Scan_Result from "./QrRead-Scan-Result";
-// import QrRead_Scan_History from "./QrRead-scan-History";
+import QrRead_History from "./QrRead-History";
 import QrRead_Scan_Cont from "./QrRead-Scan-Cont";
 import {
   Link,
@@ -32,16 +32,23 @@ export default function QrReader() {
   const qrFoundRef = useRef(false);
   const scanningRef = useRef(false);
 
-  // Load history from localStorage on mount
-  useEffect(() => {
-    loadHistoryFromStorage();
-    return () => stopCamera();
-  }, []);
+  // ===== DEFINE ALL FUNCTIONS FIRST =====
 
-  // Save history to localStorage whenever it changes
-  useEffect(() => {
-    saveHistoryToStorage();
-  }, [saveHistoryToStorage]);
+  // Save history to localStorage
+  const saveHistoryToStorage = () => {
+    try {
+      if (scanHistory.length > 0) {
+        const historyToSave = JSON.stringify(scanHistory);
+        localStorage.setItem("qrScanHistory", historyToSave);
+        console.log("History saved to localStorage:", scanHistory.length, "items");
+      } else {
+        localStorage.removeItem("qrScanHistory");
+        console.log("History cleared from localStorage");
+      }
+    } catch (e) {
+      console.error("Failed to save history to localStorage:", e);
+    }
+  };
 
   // Load history from localStorage
   const loadHistoryFromStorage = () => {
@@ -49,7 +56,6 @@ export default function QrReader() {
       const savedHistory = localStorage.getItem("qrScanHistory");
       if (savedHistory) {
         const parsed = JSON.parse(savedHistory);
-        // Ensure each item has all required fields
         const validated = parsed.filter(item =>
           item && item.id && item.data && item.timestamp
         );
@@ -58,27 +64,9 @@ export default function QrReader() {
       }
     } catch (e) {
       console.error("Failed to parse history from localStorage:", e);
-      // If there's an error, clear corrupted data
       localStorage.removeItem("qrScanHistory");
     }
   };
-
-  // Save history to localStorage
-  const saveHistoryToStorage = useCallback(() => {
-    try {
-      if (scanHistory.length > 0) {
-        const historyToSave = JSON.stringify(scanHistory);
-        localStorage.setItem("qrScanHistory", historyToSave);
-        console.log("History saved to localStorage:", scanHistory.length, "items");
-      } else {
-        // If history is empty, remove from localStorage
-        localStorage.removeItem("qrScanHistory");
-        console.log("History cleared from localStorage");
-      }
-    } catch (e) {
-      console.error("Failed to save history to localStorage:", e);
-    }
-  }, [scanHistory]);
 
   // Detect QR code type
   const detectQRType = (data) => {
@@ -103,7 +91,6 @@ export default function QrReader() {
     };
 
     setScanHistory(prev => {
-      // Check for duplicates (avoid adding the same QR code within 1 minute)
       const isDuplicate = prev.some(item =>
         item.data === data &&
         (Date.now() - new Date(item.timestamp).getTime()) < 60000
@@ -114,7 +101,6 @@ export default function QrReader() {
         return prev;
       }
 
-      // Keep last 20 scans
       const updated = [newScan, ...prev].slice(0, 20);
       return updated;
     });
@@ -123,7 +109,6 @@ export default function QrReader() {
   // Clear all history
   const clearHistory = () => {
     setScanHistory([]);
-    // localStorage will be cleared by the useEffect
     console.log("History cleared");
   };
 
@@ -169,7 +154,13 @@ export default function QrReader() {
 
   // Check if QR data is URL
   const isURL = qrData && (qrData.startsWith("http://") ||
-    qrData.startsWith("https://") || qrData.startsWith("www.") || qrData.includes(".com") || qrData.includes(".net") || qrData.includes(".org") || qrData.includes(".io") || qrData.includes(".app") || qrData.includes(".dev") || qrData.includes(".ai") || qrData.includes(".co") || qrData.includes(".in") || qrData.includes(".us") || qrData.includes(".uk"));
+    qrData.startsWith("https://") || qrData.startsWith("www.") ||
+    qrData.includes(".com") || qrData.includes(".net") ||
+    qrData.includes(".org") || qrData.includes(".io") ||
+    qrData.includes(".app") || qrData.includes(".dev") ||
+    qrData.includes(".ai") || qrData.includes(".co") ||
+    qrData.includes(".in") || qrData.includes(".us") ||
+    qrData.includes(".uk"));
 
   // Start camera
   const startCamera = async () => {
@@ -219,15 +210,7 @@ export default function QrReader() {
       const video = videoRef.current;
       if (!video.videoWidth || !video.videoHeight) return;
 
-      // Check if screen width is medium or larger (768px and above)
-      const isMdOrLarger = window.innerWidth >= 768;
-
-      // Calculate the size for the scanner box
-      // Smaller for md+ devices (50%), default for mobile (65%)
-      const sizePercent = isMdOrLarger ? 0.45 : 0.65;
-      const size = Math.min(video.videoWidth, video.videoHeight) * sizePercent;
-
-      // Center the capture area
+      const size = Math.min(video.videoWidth, video.videoHeight) * 0.65;
       const sx = (video.videoWidth - size) / 2;
       const sy = (video.videoHeight - size) / 2;
 
@@ -240,67 +223,32 @@ export default function QrReader() {
       // Draw overlay
       const overlay = canvasRef.current;
       if (overlay) {
-        const container = overlay.parentElement;
-        if (!container) return;
-
-        // Get the actual displayed dimensions of the container
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-
-        // Set canvas to match container dimensions exactly
-        overlay.width = containerWidth;
-        overlay.height = containerHeight;
-
+        const vw = video.clientWidth || video.videoWidth;
+        const vh = video.clientHeight || video.videoHeight;
+        overlay.width = vw;
+        overlay.height = vh;
         const octx = overlay.getContext("2d");
-        octx.clearRect(0, 0, containerWidth, containerHeight);
+        octx.clearRect(0, 0, vw, vh);
 
-        // Calculate scaling factors between video dimensions and displayed container
-        const scaleX = containerWidth / video.videoWidth;
-        const scaleY = containerHeight / video.videoHeight;
+        const scaleX = (video.clientWidth || vw) / video.videoWidth;
+        const scaleY = (video.clientHeight || vh) / video.videoHeight;
+        const dx = sx * scaleX;
+        const dy = sy * scaleY;
+        const dsize = size * Math.min(scaleX, scaleY);
 
-        // Use the smaller scale to maintain aspect ratio (like object-cover)
-        const scale = Math.max(scaleX, scaleY);
+        octx.fillStyle = "rgba(0,0,0,0.35)";
+        octx.fillRect(0, 0, vw, vh);
+        octx.clearRect(dx, dy, dsize, dsize);
 
-        // Calculate the actual displayed video dimensions
-        const displayWidth = video.videoWidth * scale;
-        const displayHeight = video.videoHeight * scale;
-
-        // Calculate offsets to center the video (since we use object-cover)
-        const offsetX = (containerWidth - displayWidth) / 2;
-        const offsetY = (containerHeight - displayHeight) / 2;
-
-        // Calculate the scanner box position in the displayed video
-        const scannerSize = size * scale;
-        const scannerX = offsetX + (sx * scale);
-        const scannerY = offsetY + (sy * scale);
-
-        // Draw semi-transparent overlay
-        octx.fillStyle = "rgba(0,0,0,0.65)";
-        octx.fillRect(0, 0, containerWidth, containerHeight);
-
-        // Clear the scanner area (make it transparent)
-        octx.clearRect(scannerX, scannerY, scannerSize, scannerSize);
-
-        // Add a subtle glow effect to the cleared area
-        octx.shadowColor = 'rgba(59, 130, 246, 0.5)';
-        octx.shadowBlur = 15;
-        octx.shadowOffsetX = 0;
-        octx.shadowOffsetY = 0;
-
-        // Draw the scanner border
         octx.strokeStyle = "#3b82f6";
-        octx.lineWidth = Math.max(3, Math.round(Math.min(containerWidth, containerHeight) * 0.004));
-        octx.strokeRect(scannerX + 1, scannerY + 1, scannerSize - 2, scannerSize - 2);
+        octx.lineWidth = Math.max(2, Math.round(Math.min(vw, vh) * 0.003));
+        octx.strokeRect(dx + 0.5, dy + 0.5, dsize - 1, dsize - 1);
 
-        // Reset shadow for corner drawing
-        octx.shadowColor = 'transparent';
-
-        // Draw animated corners
-        const cornerLen = Math.max(25, scannerSize * 0.1);
-        octx.lineWidth = Math.max(4, Math.round(octx.lineWidth * 1.2));
+        const cornerLen = Math.max(16, dsize * 0.08);
+        octx.lineWidth = Math.max(3, Math.round(octx.lineWidth * 1.2));
         octx.strokeStyle = "#3b82f6";
 
-        // Helper function to draw corner
+        // Draw corners
         const drawCorner = (x1, y1, x2, y2) => {
           octx.beginPath();
           octx.moveTo(x1, y1);
@@ -308,21 +256,14 @@ export default function QrReader() {
           octx.stroke();
         };
 
-        // Top-left corner
-        drawCorner(scannerX, scannerY + cornerLen, scannerX, scannerY);
-        drawCorner(scannerX, scannerY, scannerX + cornerLen, scannerY);
-
-        // Top-right corner
-        drawCorner(scannerX + scannerSize, scannerY + cornerLen, scannerX + scannerSize, scannerY);
-        drawCorner(scannerX + scannerSize - cornerLen, scannerY, scannerX + scannerSize, scannerY);
-
-        // Bottom-left corner
-        drawCorner(scannerX, scannerY + scannerSize - cornerLen, scannerX, scannerY + scannerSize);
-        drawCorner(scannerX, scannerY + scannerSize, scannerX + cornerLen, scannerY + scannerSize);
-
-        // Bottom-right corner
-        drawCorner(scannerX + scannerSize, scannerY + scannerSize - cornerLen, scannerX + scannerSize, scannerY + scannerSize);
-        drawCorner(scannerX + scannerSize - cornerLen, scannerY + scannerSize, scannerX + scannerSize, scannerY + scannerSize);
+        drawCorner(dx, dy + cornerLen, dx, dy);
+        drawCorner(dx, dy, dx + cornerLen, dy);
+        drawCorner(dx + dsize, dy + cornerLen, dx + dsize, dy);
+        drawCorner(dx + dsize - cornerLen, dy, dx + dsize, dy);
+        drawCorner(dx, dy + dsize - cornerLen, dx, dy + dsize);
+        drawCorner(dx, dy + dsize, dx + cornerLen, dy + dsize);
+        drawCorner(dx + dsize, dy + dsize - cornerLen, dx + dsize, dy + dsize);
+        drawCorner(dx + dsize - cornerLen, dy + dsize, dx + dsize, dy + dsize);
       }
 
       capture.toBlob(async (blob) => {
@@ -446,6 +387,21 @@ export default function QrReader() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // ===== NOW USE EFFECTS AFTER ALL FUNCTIONS ARE DEFINED =====
+
+  // Load history from localStorage on mount
+  useEffect(() => {
+    loadHistoryFromStorage();
+    return () => stopCamera();
+  }, []);
+
+  // Save history to localStorage whenever it changes
+  useEffect(() => {
+    saveHistoryToStorage();
+  }, [scanHistory]);
+
+  // ===== REST OF YOUR JSX RETURN STATEMENT =====
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-white mt-2">
       <div className="max-w-306 mx-auto p-4 md:p-8 space-y-6">
@@ -479,6 +435,7 @@ export default function QrReader() {
             handleDrop={handleDrop}
             handleDragOver={handleDragOver}
             handleFile={handleFile}
+
           />
         </div>
 
@@ -494,12 +451,13 @@ export default function QrReader() {
             handleCopy={handleCopy}
             handleShare={handleShare}
             handleClear={handleClear}
+
           />
         </div>
 
         {/* Recent Scans Section */}
         <div>
-          {/*<QrRead_Scan_History
+          <QrRead_History
             // State props
             scanHistory={scanHistory}
             showHistory={showHistory}
@@ -512,27 +470,10 @@ export default function QrReader() {
             // Helper function props
             getIconForType={getIconForType}
             formatTimestamp={formatTimestamp}
-          />*/}
+
+          />
         </div>
       </div>
-
-      {/* Animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

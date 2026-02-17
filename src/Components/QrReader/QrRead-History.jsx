@@ -12,7 +12,7 @@ const CloseIcon = () => (
     </svg>
 );
 
-function QrRead_Scan_History({
+function QrRead_History({
     // State props
     scanHistory,
     showHistory,
@@ -108,4 +108,4 @@ function QrRead_Scan_History({
     )
 }
 
-export default QrRead_Scan_History
+export default QrRead_History;
