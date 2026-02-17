@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import QrGene_History from "./QrGene-history";
+import QrGene_Stored_History from "./QrGene-Stored-History";
 import QrGene_Customize from "./QrGene-Customize";
 import QrGene_Qrpreview from "./QrGene-Qrpreview";
 import QrGene_Form from "./QrGene-Form";
@@ -583,7 +583,7 @@ export default function QrGenerator() {
                 </div>
                 <div>
                     {/* History Panel */}
-                    <QrGene_History history={history} setHistory={setHistory} deleteHistoryItem={deleteHistoryItem} History_Info_Button={History_Info_Button} selectedHistoryItem={selectedHistoryItem} />
+                    <QrGene_Stored_History history={history} setHistory={setHistory} deleteHistoryItem={deleteHistoryItem} History_Info_Button={History_Info_Button} selectedHistoryItem={selectedHistoryItem} />
                 </div>
             </div>
         </>

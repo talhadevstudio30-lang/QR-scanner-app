@@ -3,7 +3,7 @@ import {
     Clock,
 } from "lucide-react";
 
-function QrGene_History({ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }) {
+function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }) {
 
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
@@ -40,12 +40,12 @@ function QrGene_History({ history, setHistory, deleteHistoryItem, History_Info_B
 
                     {history.length > 0 && (
                         <>
-                            <button
+                            {/* <button
                                 onClick={clearHistory}
                                 className="text-14.5px sm:text-[15px] font-medium text-blue-600 hover:underline"
                             >
                                 Show More
-                            </button>
+                            </button> */}
                             <button
                                 onClick={clearHistory}
                                 className="text-14.5px sm:text-[15px] font-medium text-blue-600 hover:underline"
@@ -184,4 +184,4 @@ function QrGene_History({ history, setHistory, deleteHistoryItem, History_Info_B
     )
 }
 
-export default QrGene_History
+export default QrGene_Stored_History;
