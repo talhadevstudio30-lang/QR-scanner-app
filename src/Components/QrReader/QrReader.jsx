@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import QrRead_Header from "./QrRead-Header";
 import QrRead_Scan_Result from "./QrRead-Scan-Result";
-import QrRead_Scan_History from "./QrRead-Scan-History";
+// import QrRead_Scan_History from "./QrRead-scan-History";
 import QrRead_Scan_Cont from "./QrRead-Scan-Cont";
 import {
   Link,
@@ -499,7 +499,7 @@ export default function QrReader() {
 
         {/* Recent Scans Section */}
         <div>
-          <QrRead_Scan_History
+          {/*<QrRead_Scan_History
             // State props
             scanHistory={scanHistory}
             showHistory={showHistory}
@@ -512,7 +512,7 @@ export default function QrReader() {
             // Helper function props
             getIconForType={getIconForType}
             formatTimestamp={formatTimestamp}
-          />
+          />*/}
         </div>
       </div>
 
