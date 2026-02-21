@@ -1,11 +1,11 @@
-import React from 'react'
+import React from 'react';
+import Qrpreview_Placeholder from './Qrpreview-Placeholder';
 import {
-    Palette,
     Download,
     Copy,
     Share2,
 } from "lucide-react";
-function QrGene_Qrpreview({
+const QrGene_Qrpreview = React.memo(function QrGene_Qrpreview({
     // State props
     qrUrl,
     size,
@@ -44,13 +44,9 @@ function QrGene_Qrpreview({
                             />
                         </div>
                     ) : (
-                        <div className="w-68 h-68 bg-slate-100 rounded-2xl flex flex-col items-center justify-center">
-                            <Palette size={48} className="text-slate-400 mb-2" />
-                            <span className="text-slate-400 mb-2">QR Preview</span>
-                            <p className="text-xs text-slate-500 text-center px-4">
-                                Enter your data and click "Generate QR Code"
-                            </p>
-                        </div>
+                       <div>
+                        <Qrpreview_Placeholder />
+                       </div>
                     )}
                 </div>
 
@@ -107,6 +103,6 @@ function QrGene_Qrpreview({
             </div>
         </>
     )
-}
+});
 
 export default QrGene_Qrpreview

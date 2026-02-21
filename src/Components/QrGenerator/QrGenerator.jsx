@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef,  useCallback } from "react";
 import QrGene_Stored_History from "./QrGene-Stored-History";
 import QrGene_Customize from "./QrGene-Customize";
 import QrGene_Qrpreview from "./QrGene-Qrpreview";
@@ -52,9 +52,21 @@ export default function QrGenerator() {
 
     // Save history to localStorage whenever it changes
     useEffect(() => {
-        if (history.length > 0) {
-            localStorage.setItem("qrHistory", JSON.stringify(history));
+        if (history.length === 0) {
+            return;
         }
+
+        const save = () => {
+            localStorage.setItem("qrHistory", JSON.stringify(history));
+        };
+
+        if ("requestIdleCallback" in window) {
+            const idleId = requestIdleCallback(save);
+            return () => cancelIdleCallback(idleId);
+        }
+
+        const timeoutId = setTimeout(save, 200);
+        return () => clearTimeout(timeoutId);
     }, [history]);
 
     // Update fields when tab changes
@@ -73,17 +85,17 @@ export default function QrGenerator() {
     }, [activeTab]);
 
     // Function to generate WiFi QR code data format
-    const generateWifiQRData = () => {
+    const generateWifiQRData = useCallback(() => {
         if (!wifiSSID.trim()) {
             return "";
         }
 
         const passwordPart = passwordValue ? `P:${passwordValue};` : "";
         return `WIFI:S:${wifiSSID};T:${encryptionType};${passwordPart};`;
-    };
+    }, [wifiSSID, passwordValue, encryptionType]);
 
     // Function to generate Email QR code data format
-    const generateEmailQRData = () => {
+    const generateEmailQRData = useCallback(() => {
         if (!emailTo.trim()) {
             return "";
         }
@@ -104,10 +116,10 @@ export default function QrGenerator() {
         }
 
         return emailData;
-    };
+    }, [emailTo, emailSubject, emailBody]);
 
     // Function to build QR code URL with customization - ALWAYS PNG
-    const buildQrUrl = (dataToEncode) => {
+    const buildQrUrl = useCallback((dataToEncode) => {
         const sizeParam = `${size}x${size}`;
         let url = `https://api.qrserver.com/v1/create-qr-code/?size=${sizeParam}&data=${encodeURIComponent(dataToEncode)}&format=png`;
 
@@ -124,27 +136,10 @@ export default function QrGenerator() {
         url += `&qzone=1`;
 
         return url;
-    };
-
-    // Function to add QR code to history
-    const addToHistory = (dataToEncode, generatedUrl) => {
-        const historyItem = {
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            type: activeTab,
-            data: dataToEncode,
-            size: size,
-            qrUrl: generatedUrl,
-            customization: { ...customization },
-            details: getHistoryDetails()
-        };
-
-        const newHistory = [historyItem, ...history.slice(0, 49)];
-        setHistory(newHistory);
-    };
+    }, [size, customization]);
 
     // Function to get detailed information for history item
-    const getHistoryDetails = () => {
+    const getHistoryDetails = useCallback(() => {
         switch (activeTab) {
             case "EMAIL":
                 return {
@@ -169,7 +164,7 @@ export default function QrGenerator() {
                     text: inputValue,
                     preview: inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue
                 };
-            case "MORE":
+            case "DATA":
                 return {
                     data: inputValue,
                     preview: inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue
@@ -177,16 +172,32 @@ export default function QrGenerator() {
             default:
                 return {};
         }
-    };
+    }, [activeTab, emailTo, emailSubject, emailBody, wifiSSID, passwordValue, encryptionType, inputValue]);
 
-    const generateQRCode = () => {
+    // Function to add QR code to history
+    const addToHistory = useCallback((dataToEncode, generatedUrl) => {
+        const historyItem = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            type: activeTab,
+            data: dataToEncode,
+            size: size,
+            qrUrl: generatedUrl,
+            customization: { ...customization },
+            details: getHistoryDetails()
+        };
+        setHistory(prev => [historyItem, ...prev].slice(0, 50));
+    }, [activeTab, size, customization, getHistoryDetails]);
+
+    // 1️⃣ prepare data (shared logic)
+    const getDataToEncode = useCallback(() => {
         let dataToEncode = inputValue;
 
         if (activeTab === "WIFI") {
             const wifiData = generateWifiQRData();
             if (!wifiData) {
                 alert("Please enter WiFi Network Name (SSID)");
-                return;
+                return null;
             }
             dataToEncode = wifiData;
         }
@@ -194,27 +205,219 @@ export default function QrGenerator() {
             const emailData = generateEmailQRData();
             if (!emailData) {
                 alert("Please enter at least an email address");
-                return;
+                return null;
             }
             dataToEncode = emailData;
         }
         else if (!inputValue.trim()) {
             alert("Please enter some data to generate QR code");
-            return;
+            return null;
         }
+        return dataToEncode;
+    }, [activeTab, inputValue, generateWifiQRData, generateEmailQRData]);
 
+    // 3️⃣ build QR
+    const build_QR = useCallback((dataToEncode) => {
+        let url = buildQrUrl(dataToEncode);
+        setQrUrl(url);
+        return url;
+    }, [buildQrUrl]);
+
+    // 2️⃣ generator → only handles loading state
+    const generateQRCode = useCallback(() => {
+        const data = getDataToEncode();
+        if (!data) return;
         setIsGenerating(true);
-
         setTimeout(() => {
-            const url = buildQrUrl(dataToEncode);
-            setQrUrl(url);
-            addToHistory(dataToEncode, url);
+            build_QR(data);
             setIsGenerating(false);
         }, 500);
-    };
+    }, [getDataToEncode, build_QR]);
+  const notificationTimeoutRef = useRef(null);
+  const stylesInjectedRef = useRef(false);
+   // ===== INJECT STYLES ONLY ONCE =====
+    useEffect(() => {
+      if (!stylesInjectedRef.current) {
+        const animationStyles = `
+          @keyframes slideIn {
+            from {
+              transform: translateX(100%) scale(0.9);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0) scale(1);
+              opacity: 1;
+            }
+          }
+  
+          @keyframes slideOut {
+            from {
+              transform: translateX(0) scale(1);
+              opacity: 1;
+            }
+            to {
+              transform: translateX(100%) scale(0.9);
+              opacity: 0;
+            }
+          }
+  
+          @keyframes progressBar {
+            from {
+              width: 100%;
+            }
+            to {
+              width: 0%;
+            }
+          }
+  
+          .animate-slide-in {
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+  
+          .animate-slide-out {
+            animation: slideOut 0.3s ease-in forwards;
+          }
+  
+          .notification-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            animation: progressBar 2s linear forwards;
+          }
+        `;
+  
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = animationStyles;
+        document.head.appendChild(styleSheet);
+        stylesInjectedRef.current = true;
+      }
+  
+      return () => {
+        // Clean up notification container on unmount
+        const container = document.getElementById('notification-container');
+        if (container) {
+          container.remove();
+        }
+      };
+    }, []);
+  
+    // ===== NOTIFICATION FUNCTION =====
+    const showNotification = useCallback((message, type = 'success') => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+  
+      let notificationContainer = document.getElementById('notification-container');
+      if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notification-container';
+        notificationContainer.className = 'fixed top-4 right-4 z-50 flex flex-col gap-3';
+        document.body.appendChild(notificationContainer);
+      }
+  
+      const notification = document.createElement('div');
+  
+      const typeStyles = {
+        success: 'bg-white/90 backdrop-blur-md border-l-4 border-blue-500 text-gray-800',
+        error: 'bg-white/90 backdrop-blur-md border-l-4 border-red-500 text-gray-800',
+        warning: 'bg-white/90 backdrop-blur-md border-l-4 border-amber-500 text-gray-800',
+        info: 'bg-white/90 backdrop-blur-md border-l-4 border-blue-400 text-gray-800'
+      };
+  
+      const icons = {
+        success: `
+          <div class="w-8 h-8 rounded-full bg-blue-100/80 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+        `,
+        error: `
+          <div class="w-8 h-8 rounded-full bg-red-100/80 flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+        `,
+        warning: `
+          <div class="w-8 h-8 rounded-full bg-amber-100/80 flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+        `,
+        info: `
+          <div class="w-8 h-8 rounded-full bg-blue-100/80 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        `
+      };
+  
+      notification.className = `${typeStyles[type]} px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 opacity-100 flex items-center gap-3 min-w-[340px] max-w-md border border-white/20 hover:shadow-xl transition-shadow duration-300 relative overflow-hidden`;
+  
+      notification.innerHTML = `
+        <div class="shrink-0">
+          ${icons[type]}
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-800">${message}</p>
+          <p class="text-xs text-gray-500 mt-0.5">${new Date().toLocaleTimeString()}</p>
+        </div>
+        <button class="shrink-0 w-6 h-6 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 focus:outline-none group" aria-label="Close">
+          <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      `;
+  
+      const progressBar = document.createElement('div');
+      progressBar.className = 'notification-progress';
+      progressBar.style.width = "90%";
+      notification.appendChild(progressBar);
+  
+      while (notificationContainer.firstChild) {
+        notificationContainer.removeChild(notificationContainer.firstChild);
+      }
+  
+      notificationContainer.appendChild(notification);
+      notification.classList.add('animate-slide-in');
+  
+      const closeButton = notification.querySelector('button');
+      closeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeNotification(notification);
+      });
+  
+      notificationTimeoutRef.current = setTimeout(() => {
+        removeNotification(notification);
+      }, 2000);
+  
+      const removeNotification = (notificationElement) => {
+        if (notificationTimeoutRef.current) {
+          clearTimeout(notificationTimeoutRef.current);
+          notificationTimeoutRef.current = null;
+        }
+  
+        notificationElement.classList.add('animate-slide-out');
+  
+        setTimeout(() => {
+          if (notificationElement.parentNode) {
+            notificationElement.parentNode.removeChild(notificationElement);
+  
+            if (notificationContainer.children.length === 0) {
+              notificationContainer.remove();
+            }
+          }
+        }, 300);
+      };
+    }, []);
 
     // Enhanced download functionality
-    const downloadQRCode = async () => {
+    const downloadQRCode = useCallback(async () => {
         if (!qrUrl) {
             alert("Please generate a QR code first");
             return;
@@ -223,7 +426,7 @@ export default function QrGenerator() {
         setIsDownloading(true);
 
         try {
-            const filename = `qr-code-${Date.now()}.png`;
+            const filename = `Adevt-Qr-Code-${Date.now()}.png`;
             const response = await fetch(qrUrl);
 
             if (!response.ok) {
@@ -232,7 +435,6 @@ export default function QrGenerator() {
 
             const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
-
             const link = document.createElement("a");
             link.href = blobUrl;
             link.download = filename;
@@ -256,78 +458,19 @@ export default function QrGenerator() {
         } finally {
             setIsDownloading(false);
         }
-    };
+    }, [qrUrl, showNotification]);
 
     // One-click download with auto-generation
-    const handleOneClickDownload = async () => {
-        let dataToEncode = inputValue;
+    const handleOneClickDownload = useCallback(() => {
+        const dataToEncode = getDataToEncode();
+        if (!dataToEncode) return;
+        const url = buildQrUrl(dataToEncode);
+        setQrUrl(url);
+        addToHistory(dataToEncode, url);
+         showNotification('Generated & Saved');
+    }, [getDataToEncode, buildQrUrl, addToHistory]);
 
-        if (activeTab === "WIFI") {
-            const wifiData = generateWifiQRData();
-            if (!wifiData) {
-                alert("Please enter WiFi Network Name (SSID)");
-                return;
-            }
-            dataToEncode = wifiData;
-        }
-        else if (activeTab === "EMAIL") {
-            const emailData = generateEmailQRData();
-            if (!emailData) {
-                alert("Please enter at least an email address");
-                return;
-            }
-            dataToEncode = emailData;
-        }
-        else if (!inputValue.trim()) {
-            alert("Please enter some data to generate QR code");
-            return;
-        }
-
-        setIsDownloading(true);
-
-        try {
-            const url = buildQrUrl(dataToEncode);
-            setQrUrl(url);
-            addToHistory(dataToEncode, url);
-
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            const filename = `qr-code-${Date.now()}.png`;
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch QR code: ${response.status}`);
-            }
-
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-
-            const link = document.createElement("a");
-            link.href = blobUrl;
-            link.download = filename;
-            link.style.display = 'none';
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-
-            document.body.appendChild(link);
-            link.click();
-
-            setTimeout(() => {
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            }, 100);
-
-            showNotification(`QR Code downloaded successfully!`);
-
-        } catch (error) {
-            console.error("One-click download error:", error);
-            alert("Failed to generate and download QR code. Please try again.");
-        } finally {
-            setIsDownloading(false);
-        }
-    };
-
-    const shareQRCode = () => {
+    const shareQRCode = useCallback(() => {
         if (!qrUrl) {
             alert("Please generate a QR code first");
             return;
@@ -344,9 +487,9 @@ export default function QrGenerator() {
                 showNotification("QR Code URL copied to clipboard!");
             });
         }
-    };
+    }, [qrUrl, showNotification]);
 
-    const copyQRCodeToClipboard = async () => {
+    const copyQRCodeToClipboard = useCallback(async () => {
         if (!qrUrl) {
             alert("Please generate a QR code first");
             return;
@@ -367,53 +510,35 @@ export default function QrGenerator() {
                 showNotification("QR Code URL copied to clipboard!");
             });
         }
-    };
+    }, [qrUrl, showNotification]);
 
-    const showNotification = (message) => {
-        const notification = document.createElement("div");
-        notification.className = "fixed top-4 right-4 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 animate-fade-in";
-        notification.textContent = message;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.classList.add("animate-fade-out");
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    };
-
-    const deleteHistoryItem = (id, e) => {
+    const deleteHistoryItem = useCallback((id, e) => {
         if (confirm("Are you sure you want to delete this QR code?")) {
             e.stopPropagation();
-            const newHistory = history.filter(item => item.id !== id);
-            setHistory(newHistory);
+            setHistory(prev => prev.filter(item => item.id !== id));
             showNotification("History item deleted");
         }
-    };
+    }, [showNotification]);
 
-    const handleThemeChange = (foregroundColor, backgroundColor) => {
+    const handleThemeChange = useCallback((foregroundColor, backgroundColor) => {
         setCustomization(prev => ({
             ...prev,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor,
             isTransparent: false // Ensure transparent is off when applying themes
         }));
-    };
+    }, []);
 
-    const handleMarginChange = (margin) => {
+    const handleMarginChange = useCallback((margin) => {
         setCustomization(prev => ({
             ...prev,
             margin: margin,
             hasMargin: margin !== "0"
         }));
-    };
+    }, []);
 
     // Reset customization to defaults
-    const resetCustomization = () => {
+    const resetCustomization = useCallback(() => {
         if (confirm("Hey! Are you sure you want to reset your Customize Appearance settings? This will remove your current changes.")) {
             setCustomization({
                 foregroundColor: "#000000",
@@ -428,9 +553,9 @@ export default function QrGenerator() {
             });
         }
         showNotification("Customization reset to defaults");
-    };
+    }, [showNotification]);
 
-    const History_Info_Button = (item) => {
+    const History_Info_Button = useCallback((item) => {
         let password = item.details?.passwordValue ||
             (item.details?.hasPassword ? "Password exists but not shown" : "No password");
 
@@ -447,7 +572,7 @@ export default function QrGenerator() {
             else if (item.type === "TEXT") {
                 details = `Text: ${item.details?.text || item.details?.preview || "Not found"}`;
             }
-            else if (item.type === "MORE") {
+            else if (item.type === "DATA") {
                 details = `Data: ${item.details?.data || item.details?.preview || "Not found"}`;
             }
             else {
@@ -455,34 +580,42 @@ export default function QrGenerator() {
             }
             alert(details);
         }
-    };
+    }, []);
 
     // Email fields change handlers
-    const handleEmailToChange = (e) => {
+    const handleEmailToChange = useCallback((e) => {
         setEmailTo(e.target.value);
-    };
+    }, []);
 
-    const handleEmailSubjectChange = (e) => {
+    const handleEmailSubjectChange = useCallback((e) => {
         setEmailSubject(e.target.value);
-    };
+    }, []);
 
-    const handleEmailBodyChange = (e) => {
+    const handleEmailBodyChange = useCallback((e) => {
         setEmailBody(e.target.value);
-    };
+    }, []);
 
     // WiFi handlers
-    const handleWifiInputChange = (e) => {
+    const handleWifiInputChange = useCallback((e) => {
         setWifiSSID(e.target.value);
-    };
+    }, []);
 
-    const handlePasswordChange = (e) => {
+    const handlePasswordChange = useCallback((e) => {
         setPasswordValue(e.target.value);
-    };
+    }, []);
 
-    const Type_Selector = (e) => {
+    const Type_Selector = useCallback((e) => {
         setEncryptionType(e.target.value);
-    };
-     
+    }, []);
+
+    const handleInputChange = useCallback((e) => {
+        setInputValue(e.target.value);
+    }, []);
+
+    const handleSizeChange = useCallback((e) => {
+        setSize(e.target.value);
+    }, []);
+
     return (
         <>
             <div className="bg-linear-to-br from-blue-50 to-white">
@@ -495,7 +628,7 @@ export default function QrGenerator() {
                     <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto">
                         {/* LEFT PANEL */}
                         <div>
-                            <div className="border-2 py-5.5 px-5 rounded-3xl bg-white shadow-sm border-slate-200">
+                            <div className="border-2 py-5 px-4 rounded-3xl bg-white shadow-sm border-slate-200">
                                 {/* Form Component */}
                                 <QrGene_Form
                                     // State values
@@ -512,14 +645,14 @@ export default function QrGenerator() {
                                     isDownloading={isDownloading}
 
                                     // Handler functions
-                                    handleInputChange={(e) => setInputValue(e.target.value)}
+                                    handleInputChange={handleInputChange}
                                     handleEmailToChange={handleEmailToChange}
                                     handleEmailSubjectChange={handleEmailSubjectChange}
                                     handleEmailBodyChange={handleEmailBodyChange}
                                     handleWifiInputChange={handleWifiInputChange}
                                     handlePasswordChange={handlePasswordChange}
                                     handleEncryptionTypeChange={Type_Selector}
-                                    handleSizeChange={(e) => setSize(e.target.value)}
+                                    handleSizeChange={handleSizeChange}
                                     generateQRCode={generateQRCode}
                                     handleOneClickDownload={handleOneClickDownload}
                                     setActiveTab={setActiveTab}

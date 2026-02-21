@@ -12,7 +12,7 @@ const CloseIcon = () => (
     </svg>
 );
 
-function QrRead_History({
+const QrRead_History = React.memo(function QrRead_History({
     // State props
     scanHistory,
     showHistory,
@@ -29,26 +29,28 @@ function QrRead_History({
 }) {
     return (
         <>
-            <div className="backdrop-blur-sm rounded-[29px] p-5">
+            <div className="backdrop-blur-sm rounded-[29px] p-1.5 sm:p-5">
                 <div className="flex items-center flex-wrap justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center">
-                            <HistoryIcon />
+                        <div className='hidden sm:block'>
+                            <div className="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center">
+                                <HistoryIcon />
+                            </div>
                         </div>
                         <h2 className="text-xl font-semibold text-gray-900">Scan History({scanHistory.length})</h2>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                         {scanHistory.length > 0 && (
                             <>
                                 <button
                                     onClick={() => setShowHistory(!showHistory)}
-                                    className="text-sm text-blue-600 rounded-[9px] hover:text-blue-700 px-3 py-1.5 hover:bg-blue-50 transition-all"
+                                    className="text-sm text-blue-600 rounded-[9px] hover:text-blue-700 px-2 py-1.5 hover:bg-blue-50 transition-all"
                                 >
                                     {showHistory ? "Show Less" : "View All"}
                                 </button>
                                 <button
                                     onClick={clearHistory}
-                                    className="text-sm text-red-500 hover:text-red-600 px-3 py-1.5 rounded-[9px] hover:bg-red-50 transition-all"
+                                    className="text-sm text-red-500 hover:text-red-600 px-2 py-1.5 rounded-[9px] hover:bg-red-50 transition-all"
                                 >
                                     Clear All
                                 </button>
@@ -61,7 +63,7 @@ function QrRead_History({
                     {(showHistory ? scanHistory : scanHistory.slice(0, 6)).map((scan) => (
                         <div
                             key={scan.id}
-                            className="group bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all hover:border-blue-200"
+                            className="group bg-white border border-gray-200 sm:rounded-2xl rounded-[17px] p-2.5 sm:p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-all hover:border-blue-200"
                         >
                             <div className="w-10 h-10 bg-linear-to from-blue-50 to-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
                                 {getIconForType(scan.type)}
@@ -106,6 +108,6 @@ function QrRead_History({
             </div>
         </>
     )
-}
+});
 
 export default QrRead_History;

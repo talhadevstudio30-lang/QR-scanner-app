@@ -1,56 +1,53 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
     Palette,
 } from "lucide-react";
 
-function QrGene_Customize({ customization, resetCustomization, handleThemeChange, handleMarginChange }) {
+const MARGIN_OPTIONS = [
+    { value: "0", label: "None" },
+    { value: "1", label: "Small" },
+    { value: "4", label: "Medium" },
+    { value: "8", label: "Large" },
+];
 
-    // Margin options
-    const marginOptions = [
-        { value: "0", label: "None" },
-        { value: "1", label: "Small" },
-        { value: "4", label: "Medium" },
-        { value: "8", label: "Large" },
-    ];
+const THEME_PRESETS = [
+    { name: "Classic Black", foreground: "#000000", background: "#FFFFFF" },
+    { name: "Ocean Blue", foreground: "#2563eb", background: "#f8fafc" },
+    { name: "Royal Purple", foreground: "#7c3aed", background: "#faf5ff" },
+    { name: "Forest Green", foreground: "#059669", background: "#f0fdf4" },
+    { name: "Sunset Red", foreground: "#dc2626", background: "#fff7ed" },
+    { name: "Minimal Gray", foreground: "#334155", background: "#f1f5f9" },
+    { name: "Cyber Pink", foreground: "#db2777", background: "#fdf2f8" },
+    { name: "Deep Ocean", foreground: "#0f766e", background: "#ecfdf5" },
+    { name: "Warm Amber", foreground: "#b45309", background: "#fffbeb" },
+    { name: "Berry", foreground: "#9d174d", background: "#fdf2f8" },
+];
+
+const QrGene_Customize = React.memo(function QrGene_Customize({ customization, resetCustomization, handleThemeChange, handleMarginChange }) {
 
     const [customize_appearance_length, setcustomize_appearance_length] = useState(false);
 
-    // Theme presets with foreground and background colors
-    const themePresets = [
-        { name: "Classic Black", foreground: "#000000", background: "#FFFFFF" },
-        { name: "Ocean Blue", foreground: "#2563eb", background: "#f8fafc" },
-        { name: "Royal Purple", foreground: "#7c3aed", background: "#faf5ff" },
-        { name: "Forest Green", foreground: "#059669", background: "#f0fdf4" },
-        { name: "Sunset Red", foreground: "#dc2626", background: "#fff7ed" },
-        { name: "Minimal Gray", foreground: "#334155", background: "#f1f5f9" },
-        { name: "Cyber Pink", foreground: "#db2777", background: "#fdf2f8" },
-        { name: "Deep Ocean", foreground: "#0f766e", background: "#ecfdf5" },
-        { name: "Warm Amber", foreground: "#b45309", background: "#fffbeb" },
-        { name: "Berry", foreground: "#9d174d", background: "#fdf2f8" },
-    ];
-
-    // Helper function to get current theme name
-    const getCurrentThemeName = () => {
-        const currentTheme = themePresets.find(
+    const currentThemeName = useMemo(() => {
+        const currentTheme = THEME_PRESETS.find(
             theme => theme.foreground === customization.foregroundColor &&
                 theme.background === customization.backgroundColor
         );
         return currentTheme ? currentTheme.name : "";
-    };
+    }, [customization.foregroundColor, customization.backgroundColor]);
     const [ShowMore_ShowLess_Status, setShowMore_ShowLess_Status] = useState("More");
 
-    const handle_ShowMore_ShowLess = () => {
+    const handle_ShowMore_ShowLess = useCallback(() => {
         setcustomize_appearance_length(prev => {
             const next = !prev;
             setShowMore_ShowLess_Status(next ? "Less" : "More");
             return next;
         });
-    };
+    }, []);
 
     return (
         <>
             <div>
-                <div className="lg:mt-5 border-2 lg:py-5 lg:px-5 rounded-3xl bg-white shadow-sm px-3.5 py-3.5 border-slate-200">
+                <div className="lg:mt-5 border-2 lg:py-5 lg:px-5 rounded-3xl bg-white shadow-sm px-4 py-3 border-slate-200">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                             <Palette size={24} className="text-blue-500" />
@@ -88,7 +85,7 @@ function QrGene_Customize({ customization, resetCustomization, handleThemeChange
                                 Theme Colors
                             </label>
                             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                                {themePresets.slice(0, customize_appearance_length ? 12 : 5).map((theme) => (
+                                {THEME_PRESETS.slice(0, customize_appearance_length ? 12 : 5).map((theme) => (
                                     <button
                                         key={theme.name}
                                         onClick={() => handleThemeChange(theme.foreground, theme.background)}
@@ -129,7 +126,7 @@ function QrGene_Customize({ customization, resetCustomization, handleThemeChange
                                     Current Theme
                                 </span>
                                 <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 text-slate-600`}>
-                                    {getCurrentThemeName()}
+                                    {currentThemeName}
                                 </span>
                             </div>
                         </div>
@@ -142,7 +139,7 @@ function QrGene_Customize({ customization, resetCustomization, handleThemeChange
                                         Margin Size
                                     </label>
                                     <div className="flex gap-2">
-                                        {marginOptions.map((option) => (
+                                        {MARGIN_OPTIONS.map((option) => (
                                             <button
                                                 key={option.value}
                                                 onClick={() => handleMarginChange(option.value)}
@@ -192,6 +189,6 @@ function QrGene_Customize({ customization, resetCustomization, handleThemeChange
             </div>
         </>
     )
-}
+});
 
 export default QrGene_Customize;

@@ -32,7 +32,7 @@ const SpinnerIcon = () => (
     </svg>
 );
 
-function QrRead_Scan_Cont({
+const QrRead_Scan_Cont = React.memo(function QrRead_Scan_Cont({
     // State props
     mode,
     preview,
@@ -140,7 +140,7 @@ function QrRead_Scan_Cont({
 
                         {preview ? (
                             <div className="relative inline-block">
-                                <img src={preview} className="max-w-xs rounded-xl shadow-lg" alt="Preview" />
+                                <img src={preview} className="sm:h-50 sm:w-50 md:h-70 md:w-70 rounded-xl shadow-lg" alt="Preview" />
                             </div>
                         ) : (
                             <>
@@ -180,6 +180,6 @@ function QrRead_Scan_Cont({
             </div>
         </>
     )
-}
+});
 
 export default QrRead_Scan_Cont

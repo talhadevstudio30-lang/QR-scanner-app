@@ -30,11 +30,18 @@ const TrashIcon = () => (
     </svg>
 );
 
-function QrRead_Scan_Result({
+const SaveIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+    </svg>
+);
+
+const QrRead_Scan_Result = React.memo(function QrRead_Scan_Result({
     // State props
     qrData,
     copySuccess,
     isURL,
+    Save_Btn,
 
     // Handler props
     handleCopy,
@@ -46,16 +53,16 @@ function QrRead_Scan_Result({
             <div>
                 {qrData && (
                     <>
-                        <h1 className="text-black text-[16px] sm:text-[21pxpx] md:text-[26px] mb-2.5 mt-8 pl-1.5">Scan Result</h1>
+                        <h1 className="text-black text-[16px] sm:text-[21px] md:text-[26px] mb-2.5 mt-8 pl-1.5">Scan Result</h1>
                         <div className="bg-white/80 backdrop-blur-sm rounded-[28px] shadow-md border border-blue-100 ">
-                            <div className="rounded-2xl p-6 space-y-4 animate-slideUp">
-                                <div className="flex items-start gap-4">
+                            <div className="rounded-2xl p-4.5 sm:p-6 space-y-4 animate-slideUp">
+                                <div className="flex items-start gap-2 sm:gap-4">
                                     <div className="bg-green-200 w-12 h-12 rounded-xl flex items-center justify-center">
                                         <CheckIcon />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm text-gray-600 font-medium mb-2">DECODED CONTENT</p>
-                                        <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-green-100">
+                                        <p className="text-sm text-gray-600 font-medium mb-2 ml-3 sm:ml-0">DECODED CONTENT</p>
+                                        <div className="flex items-center gap-2 bg-white rounded-[13.5px] p-3 border border-green-100">
                                             <span className="flex-1 text-sm text-gray-800 break-all font-mono">
                                                 {qrData}
                                             </span>
@@ -80,7 +87,7 @@ function QrRead_Scan_Result({
                                             href={qrData}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex-1 bg-linear-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl hover:shadow-lg transition-all text-center flex items-center justify-center gap-2"
+                                            className="flex-1 bg-linear-to-r from-blue-600 to-blue-500 text-white py-3 rounded-[13px] hover:shadow-lg transition-all text-center flex items-center justify-center gap-2"
                                         >
                                             <LinkIcon />
                                             Visit Link
@@ -88,10 +95,17 @@ function QrRead_Scan_Result({
                                     )}
                                     <button
                                         onClick={handleShare}
-                                        className="flex-1 border-2 border-gray-200 bg-white py-3 rounded-xl hover:border-blue-200 hover:bg-blue-50 transition-all text-gray-700 flex items-center justify-center gap-2"
+                                        className="flex-1 border-2 border-gray-200 bg-white py-3 rounded-[13px] hover:border-blue-200 hover:bg-blue-50 transition-all text-gray-700 flex items-center justify-center gap-2"
                                     >
                                         <ShareIcon />
-                                        Share Result
+                                        Share
+                                    </button>
+                                    <button
+                                      onClick={Save_Btn} disabled={!qrData}
+                                        className="flex-1 border-2 border-green-200 bg-white py-3 rounded-[13px] hover:border-green-300 hover:bg-green-50 transition-all text-green-600 flex items-center justify-center gap-2"
+                                    >
+                                        <SaveIcon />
+                                        Save
                                     </button>
                                     <button
                                         onClick={handleClear}
@@ -108,6 +122,6 @@ function QrRead_Scan_Result({
             </div>
         </>
     )
-}
+});
 
 export default QrRead_Scan_Result

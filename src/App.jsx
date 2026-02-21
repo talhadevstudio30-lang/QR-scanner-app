@@ -1,45 +1,43 @@
-import React from "react";
-import QrReader from "./Components/QrReader/QrReader";
+import React, { Suspense, lazy } from "react";
 import Header from "./Components/Header/Header";
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import ApiDocs from "./Components/ApiDocs";
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import QrGenerator from "./Components/QrGenerator/QrGenerator";
-import About from "./Components/About";
+
+const QrReader = lazy(() => import("./Components/QrReader/QrReader"));
+const ApiDocs = lazy(() => import("./Components/ApiDocs"));
+const About = lazy(() => import("./Components/About"));
+
+function AppLayout() {
+  return (
+    <>
+      <Header />
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <Outlet />
+      </Suspense>
+    </>
+  );
+}
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppLayout />,
+    children: [
+      { index: true, element: <QrGenerator /> },
+      { path: "generator", element: <QrGenerator /> },
+      { path: "api-docs", element: <ApiDocs /> },
+      { path: "scanner", element: <QrReader /> },
+      { path: "About", element: <About /> },
+    ],
+  },
+]);
 
 export default function QRFetcher() {
-
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <><Header /><QrGenerator /></>
-    },
-     {
-      path: "/generator",
-      element: <><Header /><QrGenerator /></>
-    },
-    {
-      path: "/api-docs",
-      element: <><Header /><ApiDocs /></>
-    },
-    {
-      path: "/scanner",
-      element: <><Header /><QrReader /></>
-    },
-     {
-      path: "/About",
-      element: <><Header /><About /></>
-    },
-  ])
-
   return (
     <>
       <div>
         <RouterProvider router={router} />
       </div>
-      
-      {/* <div>
-        <QrReader />
-      </div> */}
     </>
 
   );

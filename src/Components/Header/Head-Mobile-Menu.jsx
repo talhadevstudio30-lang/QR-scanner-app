@@ -7,7 +7,7 @@ function Head_Mobile_Menu({
     open,
 
     // Handler props
-    setOpen,handleLinkClick,
+    setOpen, handleLinkClick,
 
     // Data props
     navItems,
@@ -15,7 +15,6 @@ function Head_Mobile_Menu({
     // Location props
     location
 }) {
-    // ... component code ...
 
     return (
         <>
@@ -44,67 +43,80 @@ function Head_Mobile_Menu({
                     </div>
 
                     {/* Mobile Menu Content */}
-                    <div className="flex-1 overflow-y-auto">
-                        <div className="p-4 space-y-1">
+                    <div className="flex-1 overflow-y-auto transparent-scroll">
+                        <div className="p-3 space-y-1">
                             <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Main Navigation
                             </div>
 
-                            {navItems.map((item) => (
-                                <Link
-                                    key={item.label}
-                                    to={item.path}
-                                    onClick={handleLinkClick}
-                                    className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group/mobile ${location.pathname === item.path
-                                        ? 'bg-blue-50 text-blue-600'
-                                        : 'hover:bg-gray-50 text-gray-700'
-                                        }`}
-                                >
-                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl transition-transform ${location.pathname === item.path
-                                        ? 'bg-blue-100 text-blue-600'
-                                        : 'bg-gray-100 group-hover/mobile:bg-blue-100'
-                                        }`}>
-                                        {item.icon}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-medium flex items-center gap-2 text-base">
-                                            {item.label}
-                                            {item.badge && (
-                                                <span className="bg-linear-to-r from-pink-500 to-rose-500 text-xs text-white px-2 py-0.5 rounded-full">
-                                                    {item.badge}
-                                                </span>
-                                            )}
+                            {navItems.map((item) => {
+                                const isActive = location.pathname === item.path
+
+                                return (
+                                    <Link
+                                        key={item.label}
+                                        to={item.path}
+                                        onClick={handleLinkClick}
+                                        className={`flex items-center gap-4 px-3 py-2.5 rounded-[14.5px] transition-all duration-200 group/mobile
+        ${isActive
+                                                ? `${item.theme.activeBg} ${item.theme.activeText}`
+                                                : 'hover:bg-gray-50 text-gray-700'
+                                            }`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-[11px] flex items-center justify-center text-xl transition-transform
+        ${isActive
+                                                ? `${item.theme.activeIconBg} ${item.theme.activeText}`
+                                                : `bg-gray-100 ${item.theme.hoverIconBg}`
+                                            }`}>
+                                            {item.icon}
                                         </div>
-                                        <div className="text-sm text-gray-500 mt-0.5">
-                                            {item.label === "Scanner" ? "Scan QR codes instantly" :
-                                                item.label === "Generator" ? "Create custom QR codes" :
-                                                    "API documentation & integration"}
+
+                                        <div className="flex-1">
+                                            <div className="font-medium flex items-center gap-2 text-base">
+                                                {item.label}
+                                                {item.badge && (
+                                                    <span className="bg-linear-to-r from-pink-500 to-rose-500 text-xs text-white px-2 py-0.5 rounded-full">
+                                                        {item.badge}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="text-sm text-gray-500 mt-0.5">
+                                                {item.label === "Scanner" ? "Scan QR codes instantly" :
+                                                    item.label === "Generator" ? "Create custom QR codes" :
+                                                        "API documentation & integration"}
+                                            </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                )
+                            })}
                         </div>
 
                         {/* Additional Links */}
-                        <div className="p-4 border-t border-gray-100">
+                        <div className="p-3 border-t border-gray-100">
                             <div className="space-y-2">
                                 <Link
                                     to="/about"
                                     onClick={handleLinkClick}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-[9px] hover:bg-blue-50 text-gray-700 transition-colors group"
                                 >
-                                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                                        ℹ️
+                                    <div className="w-10 h-10 rounded-[9px] bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
                                     </div>
                                     <span className="font-medium">About Us</span>
                                 </Link>
+
                                 <Link
                                     to="/contact"
                                     onClick={handleLinkClick}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-[9px] hover:bg-blue-50 text-gray-700 transition-colors group"
                                 >
-                                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                                        📧
+                                    <div className="w-10 h-10 rounded-[9px] bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
                                     </div>
                                     <span className="font-medium">Contact Us</span>
                                 </Link>

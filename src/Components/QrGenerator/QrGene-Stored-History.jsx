@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
     Clock,
 } from "lucide-react";
 
-function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }) {
+const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }) {
 
-    const formatTime = (timestamp) => {
+    const formatTime = useCallback((timestamp) => {
         const date = new Date(timestamp);
         const now = new Date();
         const diffMs = now - date;
@@ -19,33 +19,31 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
         if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 
         return date.toLocaleDateString();
-    };
-    const clearHistory = () => {
+    }, []);
+    const clearHistory = useCallback(() => {
         if (history.length === 0) return;
 
         if (window.confirm("Are you sure you want to clear all history?")) {
             setHistory([]);
             localStorage.removeItem("qrHistory");
         }
-    };
+    }, [history.length, setHistory]);
+
+    const displayHistory = useMemo(() => (
+        history.length === 0 ? [{ id: "empty", empty: true }] : history
+    ), [history]);
 
     return (
         <div>
             <div className="mb-6 mt-9">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-3 mb-4">
+                <div className="flex items-center justify-between px-3.5 sm:px-12 py-3 mb-4">
                     <h3 className="text-lg sm:text-[19px] md:text-[22px] font-semibold text-slate-900">
-                        Generated History
+                        Generated History({history.length})
                     </h3>
 
                     {history.length > 0 && (
                         <>
-                            {/* <button
-                                onClick={clearHistory}
-                                className="text-14.5px sm:text-[15px] font-medium text-blue-600 hover:underline"
-                            >
-                                Show More
-                            </button> */}
                             <button
                                 onClick={clearHistory}
                                 className="text-14.5px sm:text-[15px] font-medium text-blue-600 hover:underline"
@@ -57,30 +55,58 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-9 py-4">
-                    {(history.length === 0 ? [{ id: "empty", empty: true }] : history).map((item) => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-14 sm:gap-6 px-9 py-4">
+                    {displayHistory.map((item) => {
                         if (item.empty) {
                             return (
-                                <div
-                                    key="empty"
-                                    className="col-span-full flex flex-col items-center justify-center rounded-[17px] bg-linear-to-b from-white to-blue-50/30 p-16 text-center border border-blue-100 shadow-sm"
-                                >
-                                    <div className="mb-5 rounded-full bg-blue-50 p-4">
-                                        <Clock
-                                            size={32}
-                                            className="text-blue-400"
-                                            strokeWidth={1.5}
-                                        />
+                                <div className="col-span-full group">
+                                    <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-white via-blue-50/20 to-indigo-50/30 p-8 text-center border border-blue-100/60 shadow-lg transition-all duration-300 hover:shadow-xl hover:border-blue-200">
+
+                                        {/* Animated background pattern */}
+                                        <div className="absolute inset-0 bg-grid-slate-100 mask-[linear-gradient(0deg,transparent,black)] opacity-40" />
+
+                                        {/* Floating gradient orbs */}
+                                        <div className="absolute top-0 -left-4 w-32 h-32 bg-linear-to-br from-blue-200/30 to-indigo-200/30 rounded-full blur-2xl animate-pulse" />
+                                        <div className="absolute bottom-0 -right-4 w-40 h-40 bg-linear-to-br from-indigo-200/30 to-purple-200/30 rounded-full blur-2xl animate-pulse delay-1000" />
+
+                                        {/* Main content */}
+                                        <div className="relative z-10 flex flex-col items-center">
+                                            {/* Icon container with animation */}
+                                            <div className="mb-6 relative">
+                                                <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-xl animate-ping" />
+                                                <div className="relative bg-linear-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 shadow-lg shadow-blue-500/20 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                                                    <Clock size={36} className="text-white" strokeWidth={1.8} />
+                                                </div>
+                                            </div>
+
+                                            {/* Title with gradient */}
+                                            <h3 className="mb-3 text-2xl font-bold bg-linear-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                                Your History is Empty
+                                            </h3>
+
+                                            {/* Descriptive text */}
+                                            <p className="max-w-md text-base text-slate-600 mb-4">
+                                                  Click "Save & Generate" to add QR codes to your history
+                                            </p>
+
+                                            {/* Feature highlights */}
+                                            <div className="flex flex-wrap gap-3 justify-center mb-6">
+                                                <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                                                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                                                    <span className="text-sm text-slate-600">Quick access</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                                                    <span className="text-sm text-slate-600">Easy-save</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                                                    <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+                                                    <span className="text-sm text-slate-600">Unlimited storage</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <h3 className="mb-2 text-lg font-semibold text-slate-800">
-                                        No History Yet
-                                    </h3>
-                                    <p className="max-w-sm text-sm text-slate-500">
-                                        Ready to create your first QR code?
-                                        <span className="block mt-1 text-blue-500 font-medium">
-                                            Start generating to see your recent codes here.
-                                        </span>
-                                    </p>
+
                                 </div>
                             );
                         }
@@ -97,7 +123,7 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
                             >
                                 {/* Preview */}
                                 <div
-                                    className="flexitems-center justify-center aspect-square rounded-[22px] p-4"
+                                    className="flex items-center justify-center aspect-square rounded-[22px] p-4"
                                     style={{
                                         backgroundColor: item.customization?.isTransparent
                                             ? 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0)'
@@ -107,14 +133,14 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
                                     <img
                                         src={item.qrUrl}
                                         alt="QR Code Preview"
-                                        className="h-full w-full object-contain"
+                                        className="h-[94%] w-[94%] sm:h-full sm:w-full object-contain"
                                     />
                                 </div>
 
                                 {/* Info */}
                                 <div className="mt-4 space-y-1">
                                     <div className="flex items-center justify-between">
-                                        <p className="text-[16px] sm:text-[16.5px] md:text-[17px] ml-0.5 font-medium text-slate-900">
+                                        <p className="text-[17.5px] sm:text-[18px] md:text-[18.5px] ml-0.5 font-medium text-slate-900">
                                             {item.type} QR
                                         </p>
                                         <div className="flex items-center space-x-1">
@@ -130,7 +156,7 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-4 h-4 sm:w-5 sm:h-5"
+                                                    className="w-5 h-5"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -156,7 +182,7 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-4 h-4 sm:w-5 sm:h-5"
+                                                    className="w-5 h-5 "
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -171,7 +197,7 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
                                             </button>
                                         </div>
                                     </div>
-                                    <p className="text-[12.5px] sm:text-[13px] -mt-1 text-slate-500 ml-1 mb-0.5">
+                                    <p className="text-[14.5px] sm:text-[15px] -mt-1 text-slate-500 ml-1 mb-0.5">
                                         <span className='text-green-600 font-bold'>·</span> {formatTime(item.timestamp)}
                                     </p>
                                 </div>
@@ -182,6 +208,6 @@ function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History
             </div>
         </div>
     )
-}
+});
 
 export default QrGene_Stored_History;
