@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef,  useCallback } from "react";
-import QrGene_Stored_History from "./QrGene-Stored-History";
-import QrGene_Customize from "./QrGene-Customize";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import QrGene_Qrpreview from "./QrGene-Qrpreview";
 import QrGene_Form from "./QrGene-Form";
 import QrGene_Header from "./QrGene-Header";
+
+// Lazy loaded components - these work perfectly with fixed import
+const QrGene_Stored_History = React.lazy(() => import('./QrGene-Stored-History'));
+const QrGene_Customize = React.lazy(() => import('./QrGene-Customize'));
 
 export default function QrGenerator() {
     const [activeTab, setActiveTab] = useState("TEXT");
@@ -233,12 +235,12 @@ export default function QrGenerator() {
             setIsGenerating(false);
         }, 500);
     }, [getDataToEncode, build_QR]);
-  const notificationTimeoutRef = useRef(null);
-  const stylesInjectedRef = useRef(false);
-   // ===== INJECT STYLES ONLY ONCE =====
+    const notificationTimeoutRef = useRef(null);
+    const stylesInjectedRef = useRef(false);
+    // ===== INJECT STYLES ONLY ONCE =====
     useEffect(() => {
-      if (!stylesInjectedRef.current) {
-        const animationStyles = `
+        if (!stylesInjectedRef.current) {
+            const animationStyles = `
           @keyframes slideIn {
             from {
               transform: translateX(100%) scale(0.9);
@@ -287,79 +289,79 @@ export default function QrGenerator() {
             animation: progressBar 2s linear forwards;
           }
         `;
-  
-        const styleSheet = document.createElement("style");
-        styleSheet.textContent = animationStyles;
-        document.head.appendChild(styleSheet);
-        stylesInjectedRef.current = true;
-      }
-  
-      return () => {
-        // Clean up notification container on unmount
-        const container = document.getElementById('notification-container');
-        if (container) {
-          container.remove();
+
+            const styleSheet = document.createElement("style");
+            styleSheet.textContent = animationStyles;
+            document.head.appendChild(styleSheet);
+            stylesInjectedRef.current = true;
         }
-      };
+
+        return () => {
+            // Clean up notification container on unmount
+            const container = document.getElementById('notification-container');
+            if (container) {
+                container.remove();
+            }
+        };
     }, []);
-  
+
     // ===== NOTIFICATION FUNCTION =====
     const showNotification = useCallback((message, type = 'success') => {
-      if (notificationTimeoutRef.current) {
-        clearTimeout(notificationTimeoutRef.current);
-      }
-  
-      let notificationContainer = document.getElementById('notification-container');
-      if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'notification-container';
-        notificationContainer.className = 'fixed top-4 right-4 z-50 flex flex-col gap-3';
-        document.body.appendChild(notificationContainer);
-      }
-  
-      const notification = document.createElement('div');
-  
-      const typeStyles = {
-        success: 'bg-white/90 backdrop-blur-md border-l-4 border-blue-500 text-gray-800',
-        error: 'bg-white/90 backdrop-blur-md border-l-4 border-red-500 text-gray-800',
-        warning: 'bg-white/90 backdrop-blur-md border-l-4 border-amber-500 text-gray-800',
-        info: 'bg-white/90 backdrop-blur-md border-l-4 border-blue-400 text-gray-800'
-      };
-  
-      const icons = {
-        success: `
+        if (notificationTimeoutRef.current) {
+            clearTimeout(notificationTimeoutRef.current);
+        }
+
+        let notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notification-container';
+            notificationContainer.className = 'fixed top-4 right-4 z-50 flex flex-col gap-3';
+            document.body.appendChild(notificationContainer);
+        }
+
+        const notification = document.createElement('div');
+
+        const typeStyles = {
+            success: 'bg-white/90 backdrop-blur-md border-l-4 border-blue-500 text-gray-800',
+            error: 'bg-white/90 backdrop-blur-md border-l-4 border-red-500 text-gray-800',
+            warning: 'bg-white/90 backdrop-blur-md border-l-4 border-amber-500 text-gray-800',
+            info: 'bg-white/90 backdrop-blur-md border-l-4 border-blue-400 text-gray-800'
+        };
+
+        const icons = {
+            success: `
           <div class="w-8 h-8 rounded-full bg-blue-100/80 flex items-center justify-center">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
             </svg>
           </div>
         `,
-        error: `
+            error: `
           <div class="w-8 h-8 rounded-full bg-red-100/80 flex items-center justify-center">
             <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </div>
         `,
-        warning: `
+            warning: `
           <div class="w-8 h-8 rounded-full bg-amber-100/80 flex items-center justify-center">
             <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
           </div>
         `,
-        info: `
+            info: `
           <div class="w-8 h-8 rounded-full bg-blue-100/80 flex items-center justify-center">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
         `
-      };
-  
-      notification.className = `${typeStyles[type]} px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 opacity-100 flex items-center gap-3 min-w-[340px] max-w-md border border-white/20 hover:shadow-xl transition-shadow duration-300 relative overflow-hidden`;
-  
-      notification.innerHTML = `
+        };
+
+        notification.className = `${typeStyles[type]} px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 opacity-100 flex items-center gap-3 min-w-[340px] max-w-md border border-white/20 hover:shadow-xl transition-shadow duration-300 relative overflow-hidden`;
+
+        notification.innerHTML = `
         <div class="shrink-0">
           ${icons[type]}
         </div>
@@ -373,47 +375,47 @@ export default function QrGenerator() {
           </svg>
         </button>
       `;
-  
-      const progressBar = document.createElement('div');
-      progressBar.className = 'notification-progress';
-      progressBar.style.width = "90%";
-      notification.appendChild(progressBar);
-  
-      while (notificationContainer.firstChild) {
-        notificationContainer.removeChild(notificationContainer.firstChild);
-      }
-  
-      notificationContainer.appendChild(notification);
-      notification.classList.add('animate-slide-in');
-  
-      const closeButton = notification.querySelector('button');
-      closeButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        removeNotification(notification);
-      });
-  
-      notificationTimeoutRef.current = setTimeout(() => {
-        removeNotification(notification);
-      }, 2000);
-  
-      const removeNotification = (notificationElement) => {
-        if (notificationTimeoutRef.current) {
-          clearTimeout(notificationTimeoutRef.current);
-          notificationTimeoutRef.current = null;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'notification-progress';
+        progressBar.style.width = "90%";
+        notification.appendChild(progressBar);
+
+        while (notificationContainer.firstChild) {
+            notificationContainer.removeChild(notificationContainer.firstChild);
         }
-  
-        notificationElement.classList.add('animate-slide-out');
-  
-        setTimeout(() => {
-          if (notificationElement.parentNode) {
-            notificationElement.parentNode.removeChild(notificationElement);
-  
-            if (notificationContainer.children.length === 0) {
-              notificationContainer.remove();
+
+        notificationContainer.appendChild(notification);
+        notification.classList.add('animate-slide-in');
+
+        const closeButton = notification.querySelector('button');
+        closeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeNotification(notification);
+        });
+
+        notificationTimeoutRef.current = setTimeout(() => {
+            removeNotification(notification);
+        }, 2000);
+
+        const removeNotification = (notificationElement) => {
+            if (notificationTimeoutRef.current) {
+                clearTimeout(notificationTimeoutRef.current);
+                notificationTimeoutRef.current = null;
             }
-          }
-        }, 300);
-      };
+
+            notificationElement.classList.add('animate-slide-out');
+
+            setTimeout(() => {
+                if (notificationElement.parentNode) {
+                    notificationElement.parentNode.removeChild(notificationElement);
+
+                    if (notificationContainer.children.length === 0) {
+                        notificationContainer.remove();
+                    }
+                }
+            }, 300);
+        };
     }, []);
 
     // Enhanced download functionality
@@ -467,7 +469,7 @@ export default function QrGenerator() {
         const url = buildQrUrl(dataToEncode);
         setQrUrl(url);
         addToHistory(dataToEncode, url);
-         showNotification('Generated & Saved');
+        showNotification('Generated & Saved');
     }, [getDataToEncode, buildQrUrl, addToHistory]);
 
     const shareQRCode = useCallback(() => {
@@ -675,14 +677,16 @@ export default function QrGenerator() {
                                 />
                             </div>
                             <div className="hidden lg:block">
-                                <QrGene_Customize
-                                    // State values
-                                    customization={customization}
-                                    // Handler functions
-                                    resetCustomization={resetCustomization}
-                                    handleThemeChange={handleThemeChange}
-                                    handleMarginChange={handleMarginChange}
-                                />
+                                <Suspense fallback={<div>Loading...</div>}>
+                                    <QrGene_Customize
+                                        // State values
+                                        customization={customization}
+                                        // Handler functions
+                                        resetCustomization={resetCustomization}
+                                        handleThemeChange={handleThemeChange}
+                                        handleMarginChange={handleMarginChange}
+                                    />
+                                </Suspense>
                             </div>
                         </div>
 
@@ -702,23 +706,27 @@ export default function QrGenerator() {
                                 />
                             </div>
                             <div className="block lg:hidden">
-                                <QrGene_Customize
-                                    // State values
-                                    customization={customization}
-                                    // Handler functions
-                                    resetCustomization={resetCustomization}
-                                    handleThemeChange={handleThemeChange}
-                                    handleMarginChange={handleMarginChange}
-                                />
+                                <Suspense fallback={<div>Loading...</div>}>
+                                    <QrGene_Customize
+                                        // State values
+                                        customization={customization}
+                                        // Handler functions
+                                        resetCustomization={resetCustomization}
+                                        handleThemeChange={handleThemeChange}
+                                        handleMarginChange={handleMarginChange}
+                                    />
+                                </Suspense>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div>
                     {/* History Panel */}
-                    <QrGene_Stored_History history={history} setHistory={setHistory} deleteHistoryItem={deleteHistoryItem} History_Info_Button={History_Info_Button} selectedHistoryItem={selectedHistoryItem} />
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <QrGene_Stored_History history={history} setHistory={setHistory} deleteHistoryItem={deleteHistoryItem} History_Info_Button={History_Info_Button} selectedHistoryItem={selectedHistoryItem} />
+                    </Suspense>
                 </div>
-            </div>
+            </div >
         </>
     );
 }
