@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import axios from "axios";
 import QrRead_Header from "./QrRead-Header";
-import QrRead_Scan_Result from "./QrRead-Scan-Result";
-import QrRead_History from "./QrRead-History";
+const QrRead_Scan_Result = React.lazy(() => import('./QrRead-Scan-Result'));
+const QrRead_History = React.lazy(() => import('./QrRead-History'));
 import QrRead_Scan_Cont from "./QrRead-Scan-Cont";
 import {
   Link,
@@ -694,37 +694,41 @@ export default function QrReader() {
 
         {/* Scan Result */}
         <div>
-          <QrRead_Scan_Result
-            // State props
-            qrData={qrData}
-            copySuccess={copySuccess}
-            isURL={isURL}
-            Save_Btn={Save_Btn}
-            // Handler props
-            handleCopy={handleCopy}
-            handleShare={handleShare}
-            handleClear={handleClear}
+          <Suspense fallback={<div>Loading...</div>}>
+            <QrRead_Scan_Result
+              // State props
+              qrData={qrData}
+              copySuccess={copySuccess}
+              isURL={isURL}
+              Save_Btn={Save_Btn}
+              // Handler props
+              handleCopy={handleCopy}
+              handleShare={handleShare}
+              handleClear={handleClear}
 
-          />
+            />
+          </Suspense>
         </div>
 
         {/* Recent Scans Section */}
         <div>
-          <QrRead_History
-            // State props
-            scanHistory={scanHistory}
-            showHistory={showHistory}
+          <Suspense fallback={<div>Loading...</div>}>
+            <QrRead_History
+              // State props
+              scanHistory={scanHistory}
+              showHistory={showHistory}
 
-            // Handler props
-            setShowHistory={setShowHistory}
-            clearHistory={clearHistory}
-            removeFromHistory={removeFromHistory}
+              // Handler props
+              setShowHistory={setShowHistory}
+              clearHistory={clearHistory}
+              removeFromHistory={removeFromHistory}
 
-            // Helper function props
-            getIconForType={getIconForType}
-            formatTimestamp={formatTimestamp}
+              // Helper function props
+              getIconForType={getIconForType}
+              formatTimestamp={formatTimestamp}
 
-          />
+            />
+          </Suspense>
         </div>
       </div>
     </div>
