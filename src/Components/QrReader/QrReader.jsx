@@ -3,7 +3,7 @@ import axios from "axios";
 import QrRead_Header from "./QrRead-Header";
 const QrRead_Scan_Result = React.lazy(() => import('./QrRead-Scan-Result'));
 const QrRead_History = React.lazy(() => import('./QrRead-History'));
-import QrRead_Scan_Cont from "./QrRead-Scan-Cont";
+const QrRead_Scan_Cont = React.lazy(() => import('./QrRead-Scan-Cont'));
 import {
   Link,
   Type,
@@ -666,30 +666,32 @@ export default function QrReader() {
 
         {/* Main Scanner Container */}
         <div>
-          <QrRead_Scan_Cont
-            // State props
-            mode={mode}
-            preview={preview}
-            loading={loading}
-            error={error}
+             <Suspense fallback={<div>Loading...</div>}>
+            <QrRead_Scan_Cont
+              // State props
+              mode={mode}
+              preview={preview}
+              loading={loading}
+              error={error}
 
-            // Ref props
-            fileInputRef={fileInputRef}
-            videoRef={videoRef}
-            canvasRef={canvasRef}
+              // Ref props
+              fileInputRef={fileInputRef}
+              videoRef={videoRef}
+              canvasRef={canvasRef}
 
-            // Handler props
-            setMode={setMode}
-            stopCamera={stopCamera}
-            setQrData={setQrData}
-            setPreview={setPreview}
-            setError={setError}
-            startCamera={startCamera}
-            handleDrop={handleDrop}
-            handleDragOver={handleDragOver}
-            handleFile={handleFile}
+              // Handler props
+              setMode={setMode}
+              stopCamera={stopCamera}
+              setQrData={setQrData}
+              setPreview={setPreview}
+              setError={setError}
+              startCamera={startCamera}
+              handleDrop={handleDrop}
+              handleDragOver={handleDragOver}
+              handleFile={handleFile}
 
-          />
+            />
+             </Suspense>
         </div>
 
         {/* Scan Result */}
