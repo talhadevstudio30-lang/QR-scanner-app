@@ -11,8 +11,7 @@ function Scan_Cont() {
                     >
                     </button>
                     <button
-                        className="flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-4
-                        bg-[#ECEFF4]
+                        className="flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-7                        bg-[#ECEFF4]
                             "
                     >
                     </button>
