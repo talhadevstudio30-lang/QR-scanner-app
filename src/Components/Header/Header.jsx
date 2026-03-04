@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
+
+// Now React is defined
+const Head_Mobile_Menu = React.lazy(() => import('./Head-Mobile-Menu'));
 import { useLocation } from "react-router-dom";
-import Head_Mobile_Menu from "./Head-Mobile-Menu";
 import Head_Logo from "./Head-Logo";
 import Head_Right_Side_Actions from "./Head-Right-Side-Actions";
 import Head_Desktop_Nav from "./Head-Desktop-Nav";
@@ -238,20 +240,22 @@ export default function Header() {
 
       {/* Mobile Menu */}
       <div>
-        <Head_Mobile_Menu
-          // State props
-          open={open}
+        <Suspense>
+          <Head_Mobile_Menu
+            // State props
+            open={open}
 
-          // Handler props
-          setOpen={setOpen}
-          handleLinkClick={handleLinkClick}
+            // Handler props
+            setOpen={setOpen}
+            handleLinkClick={handleLinkClick}
 
-          // Data props
-          navItems={NAV_ITEMS}
+            // Data props
+            navItems={NAV_ITEMS}
 
-          // Location props
-          location={location}
-        />
+            // Location props
+            location={location}
+          />
+        </Suspense>
       </div>
     </>
   );

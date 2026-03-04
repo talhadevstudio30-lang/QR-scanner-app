@@ -665,9 +665,6 @@ export default function QrReader() {
         <div>
           <QrRead_Header />
         </div>
-        {/* <div>
-          <Scan_Cont />
-        </div> */}
         {/* Main Scanner Container */}
         <div>
              <Suspense fallback={<Scan_Cont />}>
@@ -700,7 +697,7 @@ export default function QrReader() {
 
         {/* Scan Result */}
         <div>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense>
             <QrRead_Scan_Result
               // State props
               qrData={qrData}
@@ -718,7 +715,7 @@ export default function QrReader() {
 
         {/* Recent Scans Section */}
         <div>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense>
             <QrRead_History
               // State props
               scanHistory={scanHistory}

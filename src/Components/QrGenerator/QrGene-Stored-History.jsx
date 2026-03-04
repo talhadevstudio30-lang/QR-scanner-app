@@ -20,6 +20,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
 
         return date.toLocaleDateString();
     }, []);
+    
     const clearHistory = useCallback(() => {
         if (history.length === 0) return;
 
@@ -59,7 +60,10 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                     {displayHistory.map((item) => {
                         if (item.empty) {
                             return (
-                                <div className="col-span-full group">
+                                <div 
+                                    key="empty-history"
+                                    className="col-span-full group"
+                                >
                                     <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-white via-blue-50/20 to-indigo-50/30 p-8 text-center border border-blue-100/60 shadow-lg transition-all duration-300 hover:shadow-xl hover:border-blue-200">
 
                                         {/* Animated background pattern */}
@@ -86,7 +90,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
 
                                             {/* Descriptive text */}
                                             <p className="max-w-md text-base text-slate-600 mb-4">
-                                                  Click "Save & Generate" to add QR codes to your history
+                                                Click "Save & Generate" to add QR codes to your history
                                             </p>
 
                                             {/* Feature highlights */}
@@ -106,7 +110,6 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             );
                         }
@@ -114,7 +117,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                         return (
                             <div
                                 key={item.id}
-                                className={`group cursor-pointer  border rounded-[26px] bg-white p-3 transition-all
+                                className={`group cursor-pointer border rounded-[26px] bg-white p-3 transition-all
                                                 hover:-translate-y-1 hover:shadow-lg
                                                 ${selectedHistoryItem?.id === item.id
                                         ? "border-blue-300 ring-1 ring-blue-200"
@@ -172,7 +175,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
 
                                             <button
                                                 onClick={(e) => deleteHistoryItem(item.id, e)}
-                                                className="p-1 sm:p-1.5 opacity-0 group-hover:opacity-100  text-slate-500 hover:text-red-600 
+                                                className="p-1 sm:p-1.5 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-600 
                transition-all duration-200 ease-in-out transform hover:scale-110 
                hover:bg-red-50 active:bg-red-100
                focus:outline-none focus:ring-2 rounded-lg active:scale-95 focus:ring-red-300 focus:ring-opacity-50
@@ -182,7 +185,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-5 h-5 "
+                                                    className="w-5 h-5"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"

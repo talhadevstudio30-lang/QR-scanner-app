@@ -523,13 +523,43 @@ export default function QrGenerator() {
     }, [showNotification]);
 
     const handleThemeChange = useCallback((foregroundColor, backgroundColor) => {
+        // First update the customization state
         setCustomization(prev => ({
             ...prev,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor,
-            isTransparent: false // Ensure transparent is off when applying themes
+            isTransparent: false
         }));
-    }, []);
+
+        // Use setTimeout to ensure the customization state is updated before generating
+        setTimeout(() => {
+            // Get the current data to encode
+            const dataToEncode = getDataToEncode();
+            if (!dataToEncode) return;
+
+            // Build URL with the updated customization
+            // Note: We need to use the new colors directly since setCustomization hasn't completed yet
+            const sizeParam = `${size}x${size}`;
+            let url = `https://api.qrserver.com/v1/create-qr-code/?size=${sizeParam}&data=${encodeURIComponent(dataToEncode)}&format=png`;
+
+            // Use the new colors directly
+            url += `&color=${foregroundColor.replace('#', '')}`;
+
+            if (backgroundColor === 'transparent') {
+                url += `&bgcolor=transparent`;
+            } else {
+                url += `&bgcolor=${backgroundColor.replace('#', '')}`;
+            }
+
+            url += `&margin=${customization.hasMargin ? customization.margin : '0'}`;
+            url += `&qzone=1`;
+
+            
+            setTimeout(() => {
+                setQrUrl(url);
+            }, 500);
+        }, 0);
+    }, [size, customization.margin, customization.hasMargin, getDataToEncode, setIsGenerating]);
 
     const handleMarginChange = useCallback((margin) => {
         setCustomization(prev => ({
