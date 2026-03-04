@@ -4,6 +4,8 @@ import QrRead_Header from "./QrRead-Header";
 const QrRead_Scan_Result = React.lazy(() => import('./QrRead-Scan-Result'));
 const QrRead_History = React.lazy(() => import('./QrRead-History'));
 const QrRead_Scan_Cont = React.lazy(() => import('./QrRead-Scan-Cont'));
+import Scan_Cont from "./Shadow-Loaders/Scan-Cont";
+
 import {
   Link,
   Type,
@@ -663,10 +665,12 @@ export default function QrReader() {
         <div>
           <QrRead_Header />
         </div>
-
+        {/* <div>
+          <Scan_Cont />
+        </div> */}
         {/* Main Scanner Container */}
         <div>
-             <Suspense fallback={<div>Loading...</div>}>
+             <Suspense fallback={<Scan_Cont />}>
             <QrRead_Scan_Cont
               // State props
               mode={mode}
