@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-import Header_Mobile_Menu_Footer from "./Mobile-Menu-Footer";
 
 function Head_Mobile_Menu({
     // State props
@@ -19,15 +18,12 @@ function Head_Mobile_Menu({
     return (
         <>
             {/* Mobile Menu */}
-            <div className={`fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-white shadow-2xl z-60 lg:hidden transform transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'
+            <div className={`fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-white shadow-2xl z-60 lg:hidden transform transition-transform duration-200 ease-out ${open ? 'translate-x-0' : 'translate-x-full'
                 }`}>
                 <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-100">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-linear-to-br from-blue-600 to-blue-500 rounded-[10px] flex items-center justify-center text-white font-semibold shadow-lg shadow-blue-100 group-hover:shadow-blue-200 group-hover:scale-105 transition-all duration-300">
-                                <img src="QR-icon.png" alt="" />
-                            </div>
                             <div>
                                 <div className="font-bold text-gray-900 text-lg">Menu</div>
                             </div>
@@ -109,7 +105,7 @@ function Head_Mobile_Menu({
                                 </Link>
 
                                 <Link
-                                    to="/contact"
+                                    to="/h"
                                     onClick={handleLinkClick}
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-[9px] hover:bg-blue-50 text-gray-700 transition-colors group"
                                 >
@@ -122,11 +118,6 @@ function Head_Mobile_Menu({
                                 </Link>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Mobile Menu Footer */}
-                    <div>
-                        <Header_Mobile_Menu_Footer />
                     </div>
                 </div>
             </div>

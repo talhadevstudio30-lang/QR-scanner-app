@@ -18,6 +18,7 @@ function AppLayout() {
   );
 }
 
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -27,7 +28,7 @@ const router = createBrowserRouter([
       { path: "generator", element: <QrGenerator /> },
       { path: "api-docs", element: <ApiDocs /> },
       { path: "scanner", element: <QrReader /> },
-      { path: "About", element: <About /> },
+      { path: "about", element: <About /> },
     ],
   },
 ]);

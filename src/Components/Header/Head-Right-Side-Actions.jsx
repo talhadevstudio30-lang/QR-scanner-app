@@ -9,7 +9,7 @@ function Head_Right_Side_Actions({
         <>
             {/* Right Side Actions */}
             <div className="hidden lg:flex items-center gap-3 shrink-0">
-                <Link to="/About">
+                <Link to="/about">
                     <button
                         onClick={handleLinkClick}
                         className="px-3 py-2 focus:text-blue-500 text-sm sm:text-[15.5px] md:text-[16.5px] font-medium text-gray-700 rounded-xl hover:bg-gray-100 hover:text-blue-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"

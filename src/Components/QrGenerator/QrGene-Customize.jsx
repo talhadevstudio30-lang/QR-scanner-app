@@ -154,34 +154,6 @@ const QrGene_Customize = React.memo(function QrGene_Customize({ customization, r
                                         ))}
                                     </div>
                                 </div>
-
-                                {/* Color Preview */}
-                                <div className="pt-4 border-t border-slate-200">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium text-slate-700">
-                                            Theme Preview
-                                        </span>
-                                        <div className="text-xs text-slate-500">
-                                            {customization.foregroundColor} / {customization.backgroundColor}
-                                        </div>
-                                    </div>
-                                    <div className="h-12 rounded-[14px] border border-slate-200 flex overflow-hidden">
-                                        <div
-                                            className="flex-1 flex items-center justify-center"
-                                            style={{ backgroundColor: customization.backgroundColor }}
-                                        >
-                                            <div className="text-sm sm:text-[13.5px] md:text-[15px] text-slate-600">
-                                                Background
-                                            </div>
-                                        </div>
-                                        <div
-                                            className="flex-1 flex items-center justify-center text-white text-sm sm:text-[13.5px] md:text-[15px]"
-                                            style={{ backgroundColor: customization.foregroundColor }}
-                                        >
-                                            QR Color
-                                        </div>
-                                    </div>
-                                </div>
                             </>
                         )}
                     </div>

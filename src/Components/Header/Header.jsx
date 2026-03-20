@@ -103,7 +103,7 @@ export default function Header() {
   const scrollDirectionRef = useRef("up");
   const tickingRef = useRef(false);
   const scrollThreshold = 10;
-  const hideThreshold = 50;
+  const hideThreshold = 40;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -222,7 +222,7 @@ export default function Header() {
               className="h-full bg-linear-to-r from-blue-600 to-blue-500 transition-all duration-100"
               style={{
                 width: `${scrollProgress}%`
-              }}
+              }}z
             />
           </div>
         )}

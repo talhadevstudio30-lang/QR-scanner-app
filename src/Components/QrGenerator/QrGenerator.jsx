@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from "react
 import QrGene_Qrpreview from "./QrGene-Qrpreview";
 import QrGene_Form from "./QrGene-Form";
 import QrGene_Header from "./QrGene-Header";
+import { counterContext as CounterContext } from '../Context/Context';
+/* removed nested Router to avoid rendering Router within Router */
 
 // Lazy loaded components - these work perfectly with fixed import
 const QrGene_Stored_History = React.lazy(() => import('./QrGene-Stored-History'));
@@ -26,6 +28,7 @@ export default function QrGenerator() {
     // History state
     const [history, setHistory] = useState([]);
     const [selectedHistoryItem] = useState(null);
+    const [isHistoryView, setIsHistoryView] = useState(false);
 
     // Customization state
     const [customization, setCustomization] = useState({
@@ -470,7 +473,7 @@ export default function QrGenerator() {
         setQrUrl(url);
         addToHistory(dataToEncode, url);
         showNotification('Generated & Saved');
-    }, [getDataToEncode, buildQrUrl, addToHistory]);
+    }, [getDataToEncode, buildQrUrl, addToHistory, showNotification]);
 
     const shareQRCode = useCallback(() => {
         if (!qrUrl) {
@@ -554,12 +557,12 @@ export default function QrGenerator() {
             url += `&margin=${customization.hasMargin ? customization.margin : '0'}`;
             url += `&qzone=1`;
 
-            
+
             setTimeout(() => {
                 setQrUrl(url);
             }, 500);
         }, 0);
-    }, [size, customization.margin, customization.hasMargin, getDataToEncode, setIsGenerating]);
+    }, [size, customization.margin, customization.hasMargin, getDataToEncode]);
 
     const handleMarginChange = useCallback((margin) => {
         setCustomization(prev => ({
@@ -567,6 +570,14 @@ export default function QrGenerator() {
             margin: margin,
             hasMargin: margin !== "0"
         }));
+    }, []);
+
+    const goToHistory = useCallback(() => {
+        setIsHistoryView(true);
+    }, []);
+
+    const goToGenerator = useCallback(() => {
+        setIsHistoryView(false);
     }, []);
 
     // Reset customization to defaults
@@ -656,105 +667,194 @@ export default function QrGenerator() {
                     <div>
                         <QrGene_Header />
                     </div>
-                    {/* Main Layout */}
-                    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto">
-                        {/* LEFT PANEL */}
-                        <div>
-                            <div className="border-2 py-5 px-4 rounded-3xl bg-white shadow-sm border-slate-200">
-                                {/* Form Component */}
-                                <QrGene_Form
-                                    // State values
-                                    activeTab={activeTab}
-                                    inputValue={inputValue}
-                                    emailTo={emailTo}
-                                    emailSubject={emailSubject}
-                                    emailBody={emailBody}
-                                    wifiSSID={wifiSSID}
-                                    passwordValue={passwordValue}
-                                    encryptionType={encryptionType}
-                                    size={size}
-                                    isGenerating={isGenerating}
-                                    isDownloading={isDownloading}
-
-                                    // Handler functions
-                                    handleInputChange={handleInputChange}
-                                    handleEmailToChange={handleEmailToChange}
-                                    handleEmailSubjectChange={handleEmailSubjectChange}
-                                    handleEmailBodyChange={handleEmailBodyChange}
-                                    handleWifiInputChange={handleWifiInputChange}
-                                    handlePasswordChange={handlePasswordChange}
-                                    handleEncryptionTypeChange={Type_Selector}
-                                    handleSizeChange={handleSizeChange}
-                                    generateQRCode={generateQRCode}
-                                    handleOneClickDownload={handleOneClickDownload}
-                                    setActiveTab={setActiveTab}
-                                    setInputValue={setInputValue}
-                                />
-                            </div>
-
-                            {/* Customize Appearance */}
-                            <div className="block lg:hidden">
-                                <QrGene_Qrpreview
-                                    // State values
-                                    qrUrl={qrUrl}
-                                    size={size}
-                                    customization={customization}
-                                    isDownloading={isDownloading}
-                                    // Handler functions
-                                    downloadQRCode={downloadQRCode}
-                                    copyQRCodeToClipboard={copyQRCodeToClipboard}
-                                    shareQRCode={shareQRCode}
-                                />
-                            </div>
-                            <div className="hidden lg:block">
-                                <Suspense fallback={<div>Loading...</div>}>
-                                    <QrGene_Customize
-                                        // State values
-                                        customization={customization}
-                                        // Handler functions
-                                        resetCustomization={resetCustomization}
-                                        handleThemeChange={handleThemeChange}
-                                        handleMarginChange={handleMarginChange}
+                    {isHistoryView ? (
+                        <CounterContext.Provider value={{ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }}>
+                            <Suspense>
+                                <QrGene_Stored_History />
+                            </Suspense>
+                        </CounterContext.Provider>
+                    ) : (
+                        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto">
+                            {/* LEFT PANEL */}
+                            <div>
+                                <div className="border-2 py-5 px-4 rounded-3xl bg-white shadow-sm border-slate-200">
+                                    <QrGene_Form
+                                        activeTab={activeTab}
+                                        inputValue={inputValue}
+                                        emailTo={emailTo}
+                                        emailSubject={emailSubject}
+                                        emailBody={emailBody}
+                                        wifiSSID={wifiSSID}
+                                        passwordValue={passwordValue}
+                                        encryptionType={encryptionType}
+                                        size={size}
+                                        isGenerating={isGenerating}
+                                        isDownloading={isDownloading}
+                                        handleInputChange={handleInputChange}
+                                        handleEmailToChange={handleEmailToChange}
+                                        handleEmailSubjectChange={handleEmailSubjectChange}
+                                        handleEmailBodyChange={handleEmailBodyChange}
+                                        handleWifiInputChange={handleWifiInputChange}
+                                        handlePasswordChange={handlePasswordChange}
+                                        handleEncryptionTypeChange={Type_Selector}
+                                        handleSizeChange={handleSizeChange}
+                                        generateQRCode={generateQRCode}
+                                        handleOneClickDownload={handleOneClickDownload}
+                                        setActiveTab={setActiveTab}
+                                        setInputValue={setInputValue}
                                     />
-                                </Suspense>
+                                </div>
+                                <div className="block lg:hidden">
+                                    <QrGene_Qrpreview
+                                        qrUrl={qrUrl}
+                                        size={size}
+                                        customization={customization}
+                                        isDownloading={isDownloading}
+                                        downloadQRCode={downloadQRCode}
+                                        copyQRCodeToClipboard={copyQRCodeToClipboard}
+                                        shareQRCode={shareQRCode}
+                                    />
+                                </div>
+                                <div className="hidden lg:block">
+                                    <Suspense>
+                                        <QrGene_Customize
+                                            customization={customization}
+                                            resetCustomization={resetCustomization}
+                                            handleThemeChange={handleThemeChange}
+                                            handleMarginChange={handleMarginChange}
+                                        />
+                                    </Suspense>
+                                </div>
+                            </div>
+                            {/* RIGHT PANEL */}
+                            <div>
+                                <div className="hidden lg:block flex-col">
+                                    <QrGene_Qrpreview
+                                        qrUrl={qrUrl}
+                                        size={size}
+                                        customization={customization}
+                                        isDownloading={isDownloading}
+                                        downloadQRCode={downloadQRCode}
+                                        copyQRCodeToClipboard={copyQRCodeToClipboard}
+                                        shareQRCode={shareQRCode}
+                                    />
+                                </div>
+                                <div className="block lg:hidden">
+                                    <Suspense>
+                                        <QrGene_Customize
+                                            customization={customization}
+                                            resetCustomization={resetCustomization}
+                                            handleThemeChange={handleThemeChange}
+                                            handleMarginChange={handleMarginChange}
+                                        />
+                                    </Suspense>
+                                </div>
                             </div>
                         </div>
+                    )}
+                    <div className="flex w-full mt-12 justify-center items-center gap-3 px-4 mb-4">
+                       <div className="flex justify-center items-center gap-4 sm:gap-6">
+    {/* Gallery Button */}
+    <button
+        onClick={goToHistory}
+        className="
+            group
+            flex items-center gap-3
+            px-4 sm:px-6 py-2.5 sm:py-3
+            rounded-xl sm:rounded-2xl
+            bg-linear-to-r from-blue-600 to-indigo-600
+            text-white
+            font-semibold
+            text-sm sm:text-base
+            shadow-lg
+            hover:shadow-xl
+            hover:scale-105
+            active:scale-95
+            transition-all duration-300
+            focus:outline-none
+            focus:ring-2
+            focus:ring-blue-500
+            focus:ring-offset-2
+        "
+    >
+        {/* Photo Stack Icon */}
+        <svg
+            className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:scale-110"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6.75a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5z"
+            />
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 10.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+            />
+        </svg>
 
-                        {/* RIGHT PANEL */}
-                        <div>
-                            <div className="hidden lg:block flex-col">
-                                <QrGene_Qrpreview
-                                    // State values
-                                    qrUrl={qrUrl}
-                                    size={size}
-                                    customization={customization}
-                                    isDownloading={isDownloading}
-                                    // Handler functions
-                                    downloadQRCode={downloadQRCode}
-                                    copyQRCodeToClipboard={copyQRCodeToClipboard}
-                                    shareQRCode={shareQRCode}
-                                />
-                            </div>
-                            <div className="block lg:hidden">
-                                <Suspense fallback={<div>Loading...</div>}>
-                                    <QrGene_Customize
-                                        // State values
-                                        customization={customization}
-                                        // Handler functions
-                                        resetCustomization={resetCustomization}
-                                        handleThemeChange={handleThemeChange}
-                                        handleMarginChange={handleMarginChange}
-                                    />
-                                </Suspense>
-                            </div>
-                        </div>
+        <span className="font-medium tracking-wide">
+            Gallery
+        </span>
+    </button>
+
+    {/* Generator Button */}
+    <button
+        onClick={goToGenerator}
+        className="
+            group
+            flex items-center gap-2 sm:gap-3
+            px-4 sm:px-6 py-2.5 sm:py-3
+            rounded-xl sm:rounded-2xl
+            bg-linear-to-r from-slate-100 to-gray-100
+            text-slate-700
+            font-semibold
+            text-sm sm:text-base
+            shadow-md
+            border border-slate-200
+            hover:from-blue-600
+            hover:to-indigo-600
+            hover:text-white
+            hover:border-transparent
+            hover:shadow-xl
+            hover:scale-105
+            active:scale-95
+            transition-all duration-300
+            focus:outline-none
+            focus:ring-2
+            focus:ring-blue-500
+            focus:ring-offset-2
+        "
+    >
+        {/* Generator Icon */}
+        <svg
+            className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:scale-110"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.456-2.456L14.25 6l1.035-.259a3.375 3.375 0 002.456-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
+            />
+        </svg>
+
+        <span className="font-medium tracking-wide">
+            Generator
+        </span>
+    </button>
+</div>
                     </div>
                 </div>
                 <div>
-                    {/* History Panel */}
-                    <Suspense fallback={<div>Loading...</div>}>
-                        <QrGene_Stored_History history={history} setHistory={setHistory} deleteHistoryItem={deleteHistoryItem} History_Info_Button={History_Info_Button} selectedHistoryItem={selectedHistoryItem} />
-                    </Suspense>
                 </div>
             </div >
         </>

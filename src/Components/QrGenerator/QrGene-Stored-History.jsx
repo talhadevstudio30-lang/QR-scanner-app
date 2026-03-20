@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useContext , useCallback, useMemo } from 'react';
+import { counterContext as CounterContext } from '../Context/Context';
 import {
     Clock,
 } from "lucide-react";
 
-const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }) {
-
+const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
+    const value = useContext(CounterContext);
     const formatTime = useCallback((timestamp) => {
         const date = new Date(timestamp);
         const now = new Date();
@@ -20,30 +21,30 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
 
         return date.toLocaleDateString();
     }, []);
-    
+
     const clearHistory = useCallback(() => {
-        if (history.length === 0) return;
+        if (value.history.length === 0) return;
 
         if (window.confirm("Are you sure you want to clear all history?")) {
-            setHistory([]);
+            value.setHistory([]);
             localStorage.removeItem("qrHistory");
         }
-    }, [history.length, setHistory]);
+    }, [value]);
 
     const displayHistory = useMemo(() => (
-        history.length === 0 ? [{ id: "empty", empty: true }] : history
-    ), [history]);
-
+        value.history.length === 0 ? [{ id: "empty", empty: true }] : value.history
+    ), [value.history]);
+   
     return (
         <div>
             <div className="mb-6 mt-9">
                 {/* Header */}
                 <div className="flex items-center justify-between px-3.5 sm:px-12 py-3 mb-4">
                     <h3 className="text-lg sm:text-[19px] md:text-[22px] font-semibold text-slate-900">
-                        Generated History({history.length})
+                        Generated History({value.history.length})
                     </h3>
 
-                    {history.length > 0 && (
+                    {value.history.length > 0 && (
                         <>
                             <button
                                 onClick={clearHistory}
@@ -60,7 +61,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                     {displayHistory.map((item) => {
                         if (item.empty) {
                             return (
-                                <div 
+                                <div
                                     key="empty-history"
                                     className="col-span-full group"
                                 >
@@ -119,7 +120,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                                 key={item.id}
                                 className={`group cursor-pointer border rounded-[26px] bg-white p-3 transition-all
                                                 hover:-translate-y-1 hover:shadow-lg
-                                                ${selectedHistoryItem?.id === item.id
+                                                ${value.selectedHistoryItem?.id === item.id
                                         ? "border-blue-300 ring-1 ring-blue-200"
                                         : "border-slate-200"
                                     }`}
@@ -148,7 +149,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                                         </p>
                                         <div className="flex items-center space-x-1">
                                             <button
-                                                onClick={() => History_Info_Button(item)}
+                                                onClick={() => value.History_Info_Button(item)}
                                                 className="opacity-0 group-hover:opacity-100 p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 
                transition-all duration-200 ease-in-out transform hover:scale-110 
                hover:bg-blue-50 rounded-lg active:scale-95 active:bg-blue-100 
@@ -174,7 +175,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History({ histor
                                             </button>
 
                                             <button
-                                                onClick={(e) => deleteHistoryItem(item.id, e)}
+                                                onClick={(e) => value.deleteHistoryItem(item.id, e)}
                                                 className="p-1 sm:p-1.5 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-600 
                transition-all duration-200 ease-in-out transform hover:scale-110 
                hover:bg-red-50 active:bg-red-100
