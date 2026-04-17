@@ -3,9 +3,10 @@ import QrGene_Qrpreview from "./QrGene-Qrpreview";
 import QrGene_Form from "./QrGene-Form";
 import QrGene_Header from "./QrGene-Header";
 import { counterContext as CounterContext } from '../Context/Context';
-/* removed nested Router to avoid rendering Router within Router */
+import Swal from "sweetalert2";
+import { details } from "framer-motion/client";
 
-// Lazy loaded components - these work perfectly with fixed import
+// Lazy loaded components
 const QrGene_Stored_History = React.lazy(() => import('./QrGene-Stored-History'));
 const QrGene_Customize = React.lazy(() => import('./QrGene-Customize'));
 
@@ -25,10 +26,13 @@ export default function QrGenerator() {
     const [emailSubject, setEmailSubject] = useState("");
     const [emailBody, setEmailBody] = useState("");
 
+    // Chat/WhatsApp fields
+    const [whatsappNumber, setWhatsappNumber] = useState("");
+    const [whatsappMessage, setWhatsappMessage] = useState("");
+
     // History state
     const [history, setHistory] = useState([]);
     const [selectedHistoryItem] = useState(null);
-    const [isHistoryView, setIsHistoryView] = useState(false);
 
     // Customization state
     const [customization, setCustomization] = useState({
@@ -70,7 +74,7 @@ export default function QrGenerator() {
             return () => cancelIdleCallback(idleId);
         }
 
-        const timeoutId = setTimeout(save, 200);
+        const timeoutId = setTimeout(save, 200)
         return () => clearTimeout(timeoutId);
     }, [history]);
 
@@ -87,7 +91,29 @@ export default function QrGenerator() {
             setEmailBody("");
             setInputValue("");
         }
+
+        if (activeTab !== "CHAT") {
+            setWhatsappNumber("");
+            setWhatsappMessage("");
+        }
     }, [activeTab]);
+
+    // Function to generate WhatsApp QR code data format
+    const generateWhatsAppQRData = useCallback(() => {
+        if (!whatsappNumber.trim()) {
+            return "";
+        }
+
+        // Remove any non-numeric characters except '+'
+        const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+        let waUrl = `https://wa.me/${cleanNumber}`;
+
+        if (whatsappMessage.trim()) {
+            waUrl += `?text=${encodeURIComponent(whatsappMessage.trim())}`;
+        }
+
+        return waUrl;
+    }, [whatsappNumber, whatsappMessage]);
 
     // Function to generate WiFi QR code data format
     const generateWifiQRData = useCallback(() => {
@@ -123,7 +149,7 @@ export default function QrGenerator() {
         return emailData;
     }, [emailTo, emailSubject, emailBody]);
 
-    // Function to build QR code URL with customization - ALWAYS PNG
+    // Function to build QR code URL with customization
     const buildQrUrl = useCallback((dataToEncode) => {
         const sizeParam = `${size}x${size}`;
         let url = `https://api.qrserver.com/v1/create-qr-code/?size=${sizeParam}&data=${encodeURIComponent(dataToEncode)}&format=png`;
@@ -159,6 +185,12 @@ export default function QrGenerator() {
                     hasPassword: !!passwordValue,
                     encryptionType
                 };
+            case "CHAT":
+                return {
+                    whatsappNumber,
+                    whatsappMessage,
+                    preview: `WhatsApp: ${whatsappNumber}`
+                };
             case "LINK":
                 return {
                     url: inputValue,
@@ -169,15 +201,10 @@ export default function QrGenerator() {
                     text: inputValue,
                     preview: inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue
                 };
-            case "DATA":
-                return {
-                    data: inputValue,
-                    preview: inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue
-                };
             default:
                 return {};
         }
-    }, [activeTab, emailTo, emailSubject, emailBody, wifiSSID, passwordValue, encryptionType, inputValue]);
+    }, [activeTab, emailTo, emailSubject, emailBody, wifiSSID, passwordValue, encryptionType, inputValue, whatsappNumber, whatsappMessage]);
 
     // Function to add QR code to history
     const addToHistory = useCallback((dataToEncode, generatedUrl) => {
@@ -194,7 +221,7 @@ export default function QrGenerator() {
         setHistory(prev => [historyItem, ...prev].slice(0, 50));
     }, [activeTab, size, customization, getHistoryDetails]);
 
-    // 1️⃣ prepare data (shared logic)
+    // Prepare data (shared logic)
     const getDataToEncode = useCallback(() => {
         let dataToEncode = inputValue;
 
@@ -214,21 +241,29 @@ export default function QrGenerator() {
             }
             dataToEncode = emailData;
         }
+        else if (activeTab === "CHAT") {
+            const whatsappData = generateWhatsAppQRData();
+            if (!whatsappData) {
+                alert("Please enter a WhatsApp number");
+                return null;
+            }
+            dataToEncode = whatsappData;
+        }
         else if (!inputValue.trim()) {
             alert("Please enter some data to generate QR code");
             return null;
         }
         return dataToEncode;
-    }, [activeTab, inputValue, generateWifiQRData, generateEmailQRData]);
+    }, [activeTab, inputValue, generateWifiQRData, generateEmailQRData, generateWhatsAppQRData]);
 
-    // 3️⃣ build QR
+    // Build QR
     const build_QR = useCallback((dataToEncode) => {
         let url = buildQrUrl(dataToEncode);
         setQrUrl(url);
         return url;
     }, [buildQrUrl]);
 
-    // 2️⃣ generator → only handles loading state
+    // Generator → only handles loading state
     const generateQRCode = useCallback(() => {
         const data = getDataToEncode();
         if (!data) return;
@@ -238,9 +273,11 @@ export default function QrGenerator() {
             setIsGenerating(false);
         }, 500);
     }, [getDataToEncode, build_QR]);
+
     const notificationTimeoutRef = useRef(null);
     const stylesInjectedRef = useRef(false);
-    // ===== INJECT STYLES ONLY ONCE =====
+
+    // INJECT STYLES ONLY ONCE
     useEffect(() => {
         if (!stylesInjectedRef.current) {
             const animationStyles = `
@@ -300,7 +337,6 @@ export default function QrGenerator() {
         }
 
         return () => {
-            // Clean up notification container on unmount
             const container = document.getElementById('notification-container');
             if (container) {
                 container.remove();
@@ -308,7 +344,7 @@ export default function QrGenerator() {
         };
     }, []);
 
-    // ===== NOTIFICATION FUNCTION =====
+    // NOTIFICATION FUNCTION
     const showNotification = useCallback((message, type = 'success') => {
         if (notificationTimeoutRef.current) {
             clearTimeout(notificationTimeoutRef.current);
@@ -526,7 +562,6 @@ export default function QrGenerator() {
     }, [showNotification]);
 
     const handleThemeChange = useCallback((foregroundColor, backgroundColor) => {
-        // First update the customization state
         setCustomization(prev => ({
             ...prev,
             foregroundColor: foregroundColor,
@@ -534,18 +569,13 @@ export default function QrGenerator() {
             isTransparent: false
         }));
 
-        // Use setTimeout to ensure the customization state is updated before generating
         setTimeout(() => {
-            // Get the current data to encode
             const dataToEncode = getDataToEncode();
             if (!dataToEncode) return;
 
-            // Build URL with the updated customization
-            // Note: We need to use the new colors directly since setCustomization hasn't completed yet
             const sizeParam = `${size}x${size}`;
             let url = `https://api.qrserver.com/v1/create-qr-code/?size=${sizeParam}&data=${encodeURIComponent(dataToEncode)}&format=png`;
 
-            // Use the new colors directly
             url += `&color=${foregroundColor.replace('#', '')}`;
 
             if (backgroundColor === 'transparent') {
@@ -556,7 +586,6 @@ export default function QrGenerator() {
 
             url += `&margin=${customization.hasMargin ? customization.margin : '0'}`;
             url += `&qzone=1`;
-
 
             setTimeout(() => {
                 setQrUrl(url);
@@ -570,14 +599,6 @@ export default function QrGenerator() {
             margin: margin,
             hasMargin: margin !== "0"
         }));
-    }, []);
-
-    const goToHistory = useCallback(() => {
-        setIsHistoryView(true);
-    }, []);
-
-    const goToGenerator = useCallback(() => {
-        setIsHistoryView(false);
     }, []);
 
     // Reset customization to defaults
@@ -598,31 +619,111 @@ export default function QrGenerator() {
         showNotification("Customization reset to defaults");
     }, [showNotification]);
 
+
+
     const History_Info_Button = useCallback((item) => {
         let password = item.details?.passwordValue ||
             (item.details?.hasPassword ? "Password exists but not shown" : "No password");
+       
+        let text = "";
 
         if (item.type === "WIFI") {
-            alert(`WiFi Details:\nSSID: ${item.details?.wifiSSID || "Not found"}\nPassword: ${password}\nEncryption: ${item.details?.encryptionType || "Not found"}`);
-        } else {
-            let details = "";
-            if (item.type === "EMAIL") {
-                details = `Email Details:\nTo: ${item.details?.emailTo || "Not found"}\nSubject: ${item.details?.emailSubject || "None"}\nBody: ${item.details?.emailBody || "None"}`;
-            }
-            else if (item.type === "LINK") {
-                details = `Link: ${item.details?.url || item.details?.preview || "Not found"}`;
-            }
-            else if (item.type === "TEXT") {
-                details = `Text: ${item.details?.text || item.details?.preview || "Not found"}`;
-            }
-            else if (item.type === "DATA") {
-                details = `Data: ${item.details?.data || item.details?.preview || "Not found"}`;
-            }
-            else {
-                details = "Unknown QR type";
-            }
-            alert(details);
+            text = `SSID: ${item.details?.wifiSSID || "Not found"}
+Password: ${password}
+Encryption: ${item.details?.encryptionType || "Not found"}`;
         }
+        else if (item.type === "CHAT") {
+            text = `Number: ${item.details?.whatsappNumber || "Not found"}
+Message: ${item.details?.whatsappMessage || "No message"}`;
+        }
+        else if (item.type === "EMAIL") {
+            text = `To: ${item.details?.emailTo || "Not found"}
+Subject: ${item.details?.emailSubject || "None"}
+Body: ${item.details?.emailBody || "None"}`;
+        }
+        else if (item.type === "LINK") {
+            text = `${item.details?.url || item.details?.preview || "Not found"}`;
+        }
+        else if (item.type === "TEXT") {
+            text = `Text: ${item.details?.text || item.details?.preview || "Not found"}`;
+        }
+        else {
+            text = "Unknown QR type";
+        }
+        Swal.fire({
+            title: `${item.type} Details`,
+            html: `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <img 
+        src="${item.qrUrl}" 
+        alt="QR Code"
+        style="
+          width:200px; 
+          height:200px;
+          padding:7px;
+          box-shadow: 0 0 15px #cdcbcb;
+          background:#f8fafc;
+          margin-bottom:10px;
+        "
+      />
+      <div style="
+        width:100%;
+        text-align:left;
+        background:#f1f5f9;
+        padding:12px;
+        border-radius:14px;
+        font-size:17px;
+        line-height:1.5;
+        color:#0f172a;
+        white-space:pre-line;
+      "><span style="color:#2f71fff1">QR</span> Details:
+      <span style="user-select: all;
+">${text}</span>
+      </div>
+    </div>
+  `,
+            confirmButtonText: "Close",
+            buttonsStyling: false,
+            didOpen: () => {
+                const popup = Swal.getPopup();
+                popup.style.borderRadius = '1.5rem';
+                // Add blur effect to backdrop
+                const backdrop = document.querySelector('.swal2-backdrop-show');
+                if (backdrop) {
+                    backdrop.style.backdropFilter = 'blur(2px)';
+                    backdrop.style.webkitBackdropFilter = 'blur(2px)';
+                }
+                // Style the bottom confirm (Close) button
+                const confirmButton = popup.querySelector('.swal2-confirm');
+                if (confirmButton) {
+                    confirmButton.style.backgroundColor = '#3b82f6';
+                    confirmButton.style.color = '#ffffff';
+                    confirmButton.style.border = 'none';
+                    confirmButton.style.borderRadius = '13px';
+                    confirmButton.style.padding = '10px 24px';
+                    confirmButton.style.fontSize = '17px';
+                    confirmButton.style.fontWeight = '500';
+                    confirmButton.style.cursor = 'pointer';
+                    confirmButton.style.transition = 'background-color 0.2s';
+
+                    confirmButton.addEventListener('mouseenter', () => {
+                        confirmButton.style.backgroundColor = '#2563eb';
+                    });
+                    confirmButton.addEventListener('mouseleave', () => {
+                        confirmButton.style.backgroundColor = '#3b82f6';
+                    });
+                }
+            }
+        });
+    }, []);
+
+    // WhatsApp handlers
+    const handleWhatsappNumberChange = useCallback((e) => {
+        setWhatsappNumber(e.target.value);
+    }, []);
+
+    const handleWhatsappMessageChange = useCallback((e) => {
+        setWhatsappMessage(e.target.value);
     }, []);
 
     // Email fields change handlers
@@ -667,192 +768,92 @@ export default function QrGenerator() {
                     <div>
                         <QrGene_Header />
                     </div>
-                    {isHistoryView ? (
-                        <CounterContext.Provider value={{ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }}>
-                            <Suspense>
-                                <QrGene_Stored_History />
-                            </Suspense>
-                        </CounterContext.Provider>
-                    ) : (
-                        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto">
-                            {/* LEFT PANEL */}
-                            <div>
-                                <div className="border-2 py-5 px-4 rounded-3xl bg-white shadow-sm border-slate-200">
-                                    <QrGene_Form
-                                        activeTab={activeTab}
-                                        inputValue={inputValue}
-                                        emailTo={emailTo}
-                                        emailSubject={emailSubject}
-                                        emailBody={emailBody}
-                                        wifiSSID={wifiSSID}
-                                        passwordValue={passwordValue}
-                                        encryptionType={encryptionType}
-                                        size={size}
-                                        isGenerating={isGenerating}
-                                        isDownloading={isDownloading}
-                                        handleInputChange={handleInputChange}
-                                        handleEmailToChange={handleEmailToChange}
-                                        handleEmailSubjectChange={handleEmailSubjectChange}
-                                        handleEmailBodyChange={handleEmailBodyChange}
-                                        handleWifiInputChange={handleWifiInputChange}
-                                        handlePasswordChange={handlePasswordChange}
-                                        handleEncryptionTypeChange={Type_Selector}
-                                        handleSizeChange={handleSizeChange}
-                                        generateQRCode={generateQRCode}
-                                        handleOneClickDownload={handleOneClickDownload}
-                                        setActiveTab={setActiveTab}
-                                        setInputValue={setInputValue}
-                                    />
-                                </div>
-                                <div className="block lg:hidden">
-                                    <QrGene_Qrpreview
-                                        qrUrl={qrUrl}
-                                        size={size}
-                                        customization={customization}
-                                        isDownloading={isDownloading}
-                                        downloadQRCode={downloadQRCode}
-                                        copyQRCodeToClipboard={copyQRCodeToClipboard}
-                                        shareQRCode={shareQRCode}
-                                    />
-                                </div>
-                                <div className="hidden lg:block">
-                                    <Suspense>
-                                        <QrGene_Customize
-                                            customization={customization}
-                                            resetCustomization={resetCustomization}
-                                            handleThemeChange={handleThemeChange}
-                                            handleMarginChange={handleMarginChange}
-                                        />
-                                    </Suspense>
-                                </div>
+                    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto">
+                        {/* LEFT PANEL */}
+                        <div>
+                            <div className="border-2 py-5 px-4 rounded-3xl bg-white shadow-sm border-slate-200">
+                                <QrGene_Form
+                                    activeTab={activeTab}
+                                    inputValue={inputValue}
+                                    emailTo={emailTo}
+                                    emailSubject={emailSubject}
+                                    emailBody={emailBody}
+                                    wifiSSID={wifiSSID}
+                                    passwordValue={passwordValue}
+                                    encryptionType={encryptionType}
+                                    whatsappNumber={whatsappNumber}
+                                    whatsappMessage={whatsappMessage}
+                                    size={size}
+                                    isGenerating={isGenerating}
+                                    isDownloading={isDownloading}
+                                    handleInputChange={handleInputChange}
+                                    handleEmailToChange={handleEmailToChange}
+                                    handleEmailSubjectChange={handleEmailSubjectChange}
+                                    handleEmailBodyChange={handleEmailBodyChange}
+                                    handleWifiInputChange={handleWifiInputChange}
+                                    handlePasswordChange={handlePasswordChange}
+                                    handleEncryptionTypeChange={Type_Selector}
+                                    handleWhatsappNumberChange={handleWhatsappNumberChange}
+                                    handleWhatsappMessageChange={handleWhatsappMessageChange}
+                                    handleSizeChange={handleSizeChange}
+                                    generateQRCode={generateQRCode}
+                                    handleOneClickDownload={handleOneClickDownload}
+                                    setActiveTab={setActiveTab}
+                                    setInputValue={setInputValue}
+                                />
                             </div>
-                            {/* RIGHT PANEL */}
-                            <div>
-                                <div className="hidden lg:block flex-col">
-                                    <QrGene_Qrpreview
-                                        qrUrl={qrUrl}
-                                        size={size}
+                            <div className="block lg:hidden">
+                                <QrGene_Qrpreview
+                                    qrUrl={qrUrl}
+                                    size={size}
+                                    customization={customization}
+                                    isDownloading={isDownloading}
+                                    downloadQRCode={downloadQRCode}
+                                    copyQRCodeToClipboard={copyQRCodeToClipboard}
+                                    shareQRCode={shareQRCode}
+                                />
+                            </div>
+                            <div className="hidden lg:block">
+                                <Suspense>
+                                    <QrGene_Customize
                                         customization={customization}
-                                        isDownloading={isDownloading}
-                                        downloadQRCode={downloadQRCode}
-                                        copyQRCodeToClipboard={copyQRCodeToClipboard}
-                                        shareQRCode={shareQRCode}
+                                        resetCustomization={resetCustomization}
+                                        handleThemeChange={handleThemeChange}
+                                        handleMarginChange={handleMarginChange}
                                     />
-                                </div>
-                                <div className="block lg:hidden">
-                                    <Suspense>
-                                        <QrGene_Customize
-                                            customization={customization}
-                                            resetCustomization={resetCustomization}
-                                            handleThemeChange={handleThemeChange}
-                                            handleMarginChange={handleMarginChange}
-                                        />
-                                    </Suspense>
-                                </div>
+                                </Suspense>
                             </div>
                         </div>
-                    )}
-                    <div className="flex w-full mt-12 justify-center items-center gap-3 px-4 mb-4">
-                       <div className="flex justify-center items-center gap-4 sm:gap-6">
-    {/* Gallery Button */}
-    <button
-        onClick={goToHistory}
-        className="
-            group
-            flex items-center gap-3
-            px-4 sm:px-6 py-2.5 sm:py-3
-            rounded-xl sm:rounded-2xl
-            bg-linear-to-r from-blue-600 to-indigo-600
-            text-white
-            font-semibold
-            text-sm sm:text-base
-            shadow-lg
-            hover:shadow-xl
-            hover:scale-105
-            active:scale-95
-            transition-all duration-300
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-500
-            focus:ring-offset-2
-        "
-    >
-        {/* Photo Stack Icon */}
-        <svg
-            className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:scale-110"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6.75a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5z"
-            />
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 10.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-            />
-        </svg>
-
-        <span className="font-medium tracking-wide">
-            Gallery
-        </span>
-    </button>
-
-    {/* Generator Button */}
-    <button
-        onClick={goToGenerator}
-        className="
-            group
-            flex items-center gap-2 sm:gap-3
-            px-4 sm:px-6 py-2.5 sm:py-3
-            rounded-xl sm:rounded-2xl
-            bg-linear-to-r from-slate-100 to-gray-100
-            text-slate-700
-            font-semibold
-            text-sm sm:text-base
-            shadow-md
-            border border-slate-200
-            hover:from-blue-600
-            hover:to-indigo-600
-            hover:text-white
-            hover:border-transparent
-            hover:shadow-xl
-            hover:scale-105
-            active:scale-95
-            transition-all duration-300
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-500
-            focus:ring-offset-2
-        "
-    >
-        {/* Generator Icon */}
-        <svg
-            className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:scale-110"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.456-2.456L14.25 6l1.035-.259a3.375 3.375 0 002.456-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
-            />
-        </svg>
-
-        <span className="font-medium tracking-wide">
-            Generator
-        </span>
-    </button>
-</div>
+                        {/* RIGHT PANEL */}
+                        <div>
+                            <div className="hidden lg:block flex-col">
+                                <QrGene_Qrpreview
+                                    qrUrl={qrUrl}
+                                    size={size}
+                                    customization={customization}
+                                    isDownloading={isDownloading}
+                                    downloadQRCode={downloadQRCode}
+                                    copyQRCodeToClipboard={copyQRCodeToClipboard}
+                                    shareQRCode={shareQRCode}
+                                />
+                            </div>
+                            <div className="block lg:hidden">
+                                <Suspense>
+                                    <QrGene_Customize
+                                        customization={customization}
+                                        resetCustomization={resetCustomization}
+                                        handleThemeChange={handleThemeChange}
+                                        handleMarginChange={handleMarginChange}
+                                    />
+                                </Suspense>
+                            </div>
+                        </div>
                     </div>
+                    <CounterContext.Provider value={{ history, setHistory, deleteHistoryItem, History_Info_Button, selectedHistoryItem }}>
+                        <Suspense>
+                            <QrGene_Stored_History />
+                        </Suspense>
+                    </CounterContext.Provider>
                 </div>
                 <div>
                 </div>

@@ -1,11 +1,5 @@
 import React from 'react'
 
-const HistoryIcon = () => (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-);
-
 const CloseIcon = () => (
     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -15,12 +9,10 @@ const CloseIcon = () => (
 const QrRead_History = React.memo(function QrRead_History({
     // State props
     scanHistory,
-    showHistory,
-
-    // Handler props
-    setShowHistory,
+    
     clearHistory,
     removeFromHistory,
+    Reader_History_Item,
 
     // Helper function props
     getIconForType,
@@ -32,22 +24,11 @@ const QrRead_History = React.memo(function QrRead_History({
             <div className="backdrop-blur-sm rounded-[29px] p-1.5 sm:p-5">
                 <div className="flex items-center flex-wrap justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <div className='hidden sm:block'>
-                            <div className="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center">
-                                <HistoryIcon />
-                            </div>
-                        </div>
-                        <h2 className="text-xl font-semibold text-gray-900">Scan History({scanHistory.length})</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Saved <span className='text-[#2f71fff1]'>QR</span> Codes(<span className='text-[#2f71fff1]'>{scanHistory.length}</span>)</h2>
                     </div>
                     <div className="flex gap-1">
                         {scanHistory.length > 0 && (
                             <>
-                                <button
-                                    onClick={() => setShowHistory(!showHistory)}
-                                    className="text-sm text-blue-600 rounded-[9px] hover:text-blue-700 px-2 py-1.5 hover:bg-blue-50 transition-all"
-                                >
-                                    {showHistory ? "Show Less" : "View All"}
-                                </button>
                                 <button
                                     onClick={clearHistory}
                                     className="text-sm text-red-500 hover:text-red-600 px-2 py-1.5 rounded-[9px] hover:bg-red-50 transition-all"
@@ -60,9 +41,10 @@ const QrRead_History = React.memo(function QrRead_History({
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-3">
-                    {(showHistory ? scanHistory : scanHistory.slice(0, 6)).map((scan) => (
+                    {scanHistory.map((scan) => (
                         <div
                             key={scan.id}
+                            onClick={() => Reader_History_Item(scan)}
                             className="group bg-white border border-gray-200 sm:rounded-2xl rounded-[17px] p-2.5 sm:p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-all hover:border-blue-200"
                         >
                             <div className="w-10 h-10 bg-linear-to from-blue-50 to-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
@@ -97,12 +79,49 @@ const QrRead_History = React.memo(function QrRead_History({
                 </div>
 
                 {scanHistory.length === 0 && (
-                    <div className="text-center py-12">
-                        <div className="text-gray-400 mb-3 flex justify-center">
-                            <HistoryIcon />
+                    <div
+                        key="empty-history"
+                        className="col-span-full w-full group"
+                    >
+                        <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-white via-blue-50/20 to-indigo-50/30 p-8 text-center border border-blue-100/60 shadow-lg transition-all duration-300 hover:shadow-xl hover:border-blue-200 ">
+
+                            {/* Animated background pattern */}
+                            <div className="absolute inset-0 bg-grid-slate-100 mask-[linear-gradient(0deg,transparent,black)] opacity-40" />
+
+                            {/* Floating gradient orbs */}
+                            <div className="absolute top-0 -left-4 w-32 h-32 bg-linear-to-br from-blue-200/30 to-indigo-200/30 rounded-full blur-2xl animate-pulse" />
+                            <div className="absolute bottom-0 -right-4 w-40 h-40 bg-linear-to-br from-indigo-200/30 to-purple-200/30 rounded-full blur-2xl animate-pulse delay-1000" />
+
+                            {/* Main content */}
+                            <div className="relative z-10 flex flex-col items-center">
+                               
+                                {/* Title with gradient */}
+                                <h3 className="mb-3 text-2xl font-bold bg-linear-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                    Your Gallery is Empty
+                                </h3>
+
+                                {/* Descriptive text */}
+                                <p className="max-w-md text-base text-slate-600 mb-4">
+                                    Click "Save" to add QR codes to your gallery
+                                </p>
+
+                                {/* Feature highlights */}
+                                <div className="flex flex-wrap gap-3 justify-center mb-6">
+                                    <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                                        <span className="text-sm text-slate-600">Quick access</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                                        <span className="text-sm text-slate-600">Easy-save</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-100 shadow-sm">
+                                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+                                        <span className="text-sm text-slate-600">Unlimited storage</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-gray-500">No recent scans yet</p>
-                        <p className="text-sm text-gray-400 mt-1">Scan a QR code to see it here</p>
                     </div>
                 )}
             </div>

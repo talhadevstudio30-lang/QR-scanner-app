@@ -22,7 +22,6 @@ export default function QrReader() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [scanHistory, setScanHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
   const videoRef = useRef(null);
@@ -374,6 +373,7 @@ export default function QrReader() {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
+       
     }
     if (videoRef.current) videoRef.current.srcObject = null;
   };
@@ -390,15 +390,10 @@ export default function QrReader() {
       const video = videoRef.current;
       if (!video.videoWidth || !video.videoHeight) return;
 
-      // Check if screen width is medium or larger (768px and above)
       const isMdOrLarger = window.innerWidth >= 768;
-
-      // Calculate the size for the scanner box
-      // Smaller for md+ devices (50%), default for mobile (65%)
       const sizePercent = isMdOrLarger ? 0.45 : 0.65;
       const size = Math.min(video.videoWidth, video.videoHeight) * sizePercent;
 
-      // Center the capture area
       const sx = (video.videoWidth - size) / 2;
       const sy = (video.videoHeight - size) / 2;
 
@@ -447,10 +442,6 @@ export default function QrReader() {
         const scannerSize = size * scale;
         const scannerX = offsetX + (sx * scale);
         const scannerY = offsetY + (sy * scale);
-
-        // Draw semi-transparent overlay
-        octx.fillStyle = "rgba(0,0,0,0.65)";
-        octx.fillRect(0, 0, containerWidth, containerHeight);
 
         // Clear the scanner area (make it transparent)
         octx.clearRect(scannerX, scannerY, scannerSize, scannerSize);
@@ -657,6 +648,20 @@ export default function QrReader() {
     return () => clearTimeout(timeoutId);
   }, [scanHistory]);
 
+  const Reader_History_Item = (item) => {
+    setQrData(item.data);
+  //    const value = prompt("Edit Value" , item.data);
+
+  // if (value !== null) {
+  //   if (value === item.data) {
+  //     console.log("Value is same");
+  //   } else {
+  //     console.log("Value changed:", value);
+  //     setQrData(value); // update if changed
+  //   }
+  // }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-white mt-2">
       <div className="max-w-306 mx-auto p-4 md:p-8 space-y-6">
@@ -667,7 +672,7 @@ export default function QrReader() {
         </div>
         {/* Main Scanner Container */}
         <div>
-             <Suspense fallback={<Scan_Cont />}>
+          <Suspense fallback={<Scan_Cont />}>
             <QrRead_Scan_Cont
               // State props
               mode={mode}
@@ -692,7 +697,7 @@ export default function QrReader() {
               handleFile={handleFile}
 
             />
-             </Suspense>
+          </Suspense>
         </div>
 
         {/* Scan Result */}
@@ -719,11 +724,9 @@ export default function QrReader() {
             <QrRead_History
               // State props
               scanHistory={scanHistory}
-              showHistory={showHistory}
 
-              // Handler props
-              setShowHistory={setShowHistory}
               clearHistory={clearHistory}
+              Reader_History_Item={Reader_History_Item}
               removeFromHistory={removeFromHistory}
 
               // Helper function props

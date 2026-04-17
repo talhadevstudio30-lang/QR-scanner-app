@@ -4,7 +4,7 @@ import {
     Type,
     Mail,
     Wifi,
-    MoreHorizontal,
+    MessageCircle,
 } from "lucide-react";
 
 const TABS = [
@@ -12,7 +12,7 @@ const TABS = [
     { name: "TEXT", icon: <Type size={18} /> },
     { name: "EMAIL", icon: <Mail size={18} /> },
     { name: "WIFI", icon: <Wifi size={18} /> },
-    { name: "DATA", icon: <MoreHorizontal size={18} /> },
+    { name: "CHAT", icon: <MessageCircle size={18} /> },
 ];
 
 const getPlaceholderText = (activeTab) => {
@@ -25,8 +25,8 @@ const getPlaceholderText = (activeTab) => {
             return "";
         case "WIFI":
             return "Enter WiFi Network Name (SSID)";
-        case "DATA":
-            return "Enter data for QR code...";
+        case "CHAT":
+            return "";
         default:
             return "Enter your data...";
     }
@@ -42,8 +42,8 @@ const getLabelText = (activeTab) => {
             return "Email Configuration";
         case "WIFI":
             return "WiFi Configuration";
-        case "DATA":
-            return "Custom Data";
+        case "CHAT":
+            return "WhatsApp Chat";
         default:
             return "Input Data";
     }
@@ -59,6 +59,8 @@ const QrGene_Form = React.memo(function QrGene_Form({
     wifiSSID,
     passwordValue,
     encryptionType,
+    whatsappNumber,
+    whatsappMessage,
     size,
     isGenerating,
     isDownloading,
@@ -70,12 +72,28 @@ const QrGene_Form = React.memo(function QrGene_Form({
     handleWifiInputChange,
     handlePasswordChange,
     handleEncryptionTypeChange,
+    handleWhatsappNumberChange,
+    handleWhatsappMessageChange,
     handleSizeChange,
     generateQRCode,
     handleOneClickDownload,
     setActiveTab,
     setInputValue,
 }) {
+
+    // Check if required fields are filled
+    const isFormValid = () => {
+        switch (activeTab) {
+            case "EMAIL":
+                return emailTo.trim() !== "";
+            case "WIFI":
+                return wifiSSID.trim() !== "";
+            case "CHAT":
+                return whatsappNumber.trim() !== "";
+            default:
+                return inputValue.trim() !== "";
+        }
+    };
 
     return (
         <>
@@ -199,6 +217,39 @@ const QrGene_Form = React.memo(function QrGene_Form({
                             </select>
                         </div>
                     </>
+                ) : activeTab === "CHAT" ? (
+                    // CHAT TAB - WhatsApp form
+                    <>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">
+                                    WhatsApp Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={whatsappNumber}
+                                    onChange={handleWhatsappNumberChange}
+                                    placeholder="e.g., +923136367889"
+                                    className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm
+                                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium text-slate-700">
+                                Chat
+                            </label>
+                            <textarea
+                                value={whatsappMessage}
+                                onChange={handleWhatsappMessageChange}
+                                placeholder="Enter your chat here e.g., hi"
+                                rows="3"
+                                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm
+                                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                    </>
                 ) : (
                     // OTHER TABS - Simple input
                     <div>
@@ -239,11 +290,7 @@ const QrGene_Form = React.memo(function QrGene_Form({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 px-0.5">
                     <button
                         onClick={generateQRCode}
-                        disabled={isGenerating ||
-                            (activeTab === "EMAIL" && !emailTo.trim()) ||
-                            (activeTab === "WIFI" && !wifiSSID.trim()) ||
-                            (activeTab !== "EMAIL" && activeTab !== "WIFI" && !inputValue.trim())
-                        }
+                        disabled={isGenerating || !isFormValid()}
                         className="flex items-center justify-center gap-2 rounded-[14.5px] bg-blue-600 py-4
                         text-white font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all
                         disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg
@@ -262,15 +309,10 @@ const QrGene_Form = React.memo(function QrGene_Form({
                                 Generate QR Code
                             </>
                         )}
-
                     </button>
                     <button
                         onClick={handleOneClickDownload}
-                        disabled={isDownloading ||
-                            (activeTab === "EMAIL" && !emailTo.trim()) ||
-                            (activeTab === "WIFI" && !wifiSSID.trim()) ||
-                            (activeTab !== "EMAIL" && activeTab !== "WIFI" && !inputValue.trim())
-                        }
+                        disabled={isDownloading || !isFormValid()}
                         className="flex items-center justify-center rounded-[14.5px] gap-2 bg-white py-4
                         text-blue-600 font-semibold hover:bg-blue-50 active:scale-[0.98] transition-all
                         disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg

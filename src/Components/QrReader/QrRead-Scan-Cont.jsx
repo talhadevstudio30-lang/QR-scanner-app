@@ -107,14 +107,14 @@ const QrRead_Scan_Cont = React.memo(function QrRead_Scan_Cont({
                         <div className="flex justify-center gap-3">
                             <button
                                 onClick={startCamera}
-                                className="px-6 py-3 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-xl hover:shadow-lg transition-all flex items-center gap-2"
+                                className="px-4 py-3 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-[14px] hover:shadow-lg transition-all flex items-center gap-2"
                             >
                                 <CameraIcon />
                                 Start Camera
                             </button>
                             <button
                                 onClick={stopCamera}
-                                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all"
+                                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-[14px] hover:bg-gray-200 transition-all"
                             >
                                 Stop
                             </button>
@@ -153,7 +153,7 @@ const QrRead_Scan_Cont = React.memo(function QrRead_Scan_Cont({
                                 <p className="text-sm text-gray-500 mt-2">
                                     Supports PNG, JPG, GIF • Max 5MB
                                 </p>
-                                <button className="mt-4 bg-linear-to-r from-blue-600 to-blue-500 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all">
+                                <button className="mt-4 bg-linear-to-r from-blue-600 to-blue-500 text-white px-5 py-3 rounded-[14px] hover:shadow-lg transition-all">
                                     Browse Files
                                 </button>
                             </>

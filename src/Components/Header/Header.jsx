@@ -103,7 +103,7 @@ export default function Header() {
   const scrollDirectionRef = useRef("up");
   const tickingRef = useRef(false);
   const scrollThreshold = 10;
-  const hideThreshold = 40;
+  const hideThreshold = 25;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -135,7 +135,7 @@ export default function Header() {
         }
 
         setScrolled(currentScrollY > 5);
-        setScrollProgress(Math.min(100, Math.max(0, (currentScrollY / 300) * 100)));
+        setScrollProgress(Math.min(100, Math.max(0, (currentScrollY / 200) * 100)));
 
         lastScrollY.current = currentScrollY;
         tickingRef.current = false;
@@ -165,15 +165,23 @@ export default function Header() {
     setVisible(true);
     setOpen(false);
   }, []);
+  const baseClasses =
+    "fixed top-0 left-0 right-0 w-full z-50 py-0.5 bg-white/60 backdrop-blur-md border-b transition-all duration-300";
+
+  const visibilityClass = visible ? "translate-y-0" : "-translate-y-full";
+
+  const scrollClass = scrolled
+    ? "shadow-lg border-gray-300/50"
+    : "shadow-sm border-gray-100";
 
   return (
     <>
       {/* Header with LinkedIn scroll behavior */}
-      <header className={`fixed top-0 py-1.5 left-0 right-0 w-full bg-[#ffffff94] border-b border-gray-200 backdrop-blur-md transition-all duration-300 z-50
-        ${!visible ? '-translate-y-full' : 'translate-y-0'}
-        ${scrolled ? 'shadow-lg border-gray-300/50' : 'shadow-sm border-gray-100'}
-      `}>
-        <div className="max-w-350 mx-auto px-4 sm:px-6 lg:px-8">
+
+      <header
+        className={`${baseClasses} ${visibilityClass} ${scrollClass}`}
+      >
+        <div className="max-w-350 mx-auto px-4 sm:px-5 lg:px-6">
           <div className="flex items-center justify-between h-14 sm:h-16">
 
             {/* Logo */}
@@ -222,7 +230,7 @@ export default function Header() {
               className="h-full bg-linear-to-r from-blue-600 to-blue-500 transition-all duration-100"
               style={{
                 width: `${scrollProgress}%`
-              }}z
+              }} 
             />
           </div>
         )}
@@ -233,7 +241,7 @@ export default function Header() {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 bg-black/20 backdrop-blur-xs z-60 lg:hidden transition-opacity duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-black/20 backdrop-blur-[2px] z-60 lg:hidden transition-opacity duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         onClick={() => setOpen(false)}
       />

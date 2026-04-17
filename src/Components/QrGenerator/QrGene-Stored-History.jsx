@@ -1,4 +1,4 @@
-import React, { useContext , useCallback, useMemo } from 'react';
+import React, { useContext, useCallback, useMemo } from 'react';
 import { counterContext as CounterContext } from '../Context/Context';
 import {
     Clock,
@@ -34,14 +34,14 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
     const displayHistory = useMemo(() => (
         value.history.length === 0 ? [{ id: "empty", empty: true }] : value.history
     ), [value.history]);
-   
+
     return (
         <div>
             <div className="mb-6 mt-9">
                 {/* Header */}
                 <div className="flex items-center justify-between px-3.5 sm:px-12 py-3 mb-4">
                     <h3 className="text-lg sm:text-[19px] md:text-[22px] font-semibold text-slate-900">
-                        Generated History({value.history.length})
+                        Saved <span className='text-[#2f71fff1]'>QR</span> Codes (<span className='text-[#2f71fff1]'>{value.history.length}</span>)
                     </h3>
 
                     {value.history.length > 0 && (
@@ -57,15 +57,15 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-14 sm:gap-6 px-9 py-4">
+                <div className="flex justify-center md:justify-start items-center flex-wrap sm:gap-6 px-9 py-4">
                     {displayHistory.map((item) => {
                         if (item.empty) {
                             return (
                                 <div
                                     key="empty-history"
-                                    className="col-span-full group"
+                                    className="col-span-full w-full group"
                                 >
-                                    <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-white via-blue-50/20 to-indigo-50/30 p-8 text-center border border-blue-100/60 shadow-lg transition-all duration-300 hover:shadow-xl hover:border-blue-200">
+                                    <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-white via-blue-50/20 to-indigo-50/30 p-8 text-center border border-blue-100/60 shadow-lg transition-all duration-300 hover:shadow-xl hover:border-blue-200 ">
 
                                         {/* Animated background pattern */}
                                         <div className="absolute inset-0 bg-grid-slate-100 mask-[linear-gradient(0deg,transparent,black)] opacity-40" />
@@ -118,91 +118,66 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
                         return (
                             <div
                                 key={item.id}
-                                className={`group cursor-pointer border rounded-[26px] bg-white p-3 transition-all
-                                                hover:-translate-y-1 hover:shadow-lg
-                                                ${value.selectedHistoryItem?.id === item.id
-                                        ? "border-blue-300 ring-1 ring-blue-200"
-                                        : "border-slate-200"
+                                onClick={() => value.History_Info_Button(item)}
+                                className={`group cursor-pointer my-2 w-full sm:w-56 md:w-65 lg:w-75 
+  rounded-2xl bg-white p-4 flex flex-col justify-between
+  transition-all duration-200
+  hover:-translate-y-1 hover:shadow-lg active:scale-[0.98]
+  ${value.selectedHistoryItem?.id === item.id
+                                        ? "border-2 border-blue-400 ring-2 ring-blue-200/50 shadow-md"
+                                        : "border border-slate-200 hover:border-slate-300"
                                     }`}
                             >
-                                {/* Preview */}
-                                <div
-                                    className="flex items-center justify-center aspect-square rounded-[22px] p-4"
-                                    style={{
-                                        backgroundColor: item.customization?.isTransparent
-                                            ? 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0)'
-                                            : item.customization?.backgroundColor || '#FFFFFF'
-                                    }}
-                                >
-                                    <img
-                                        src={item.qrUrl}
-                                        alt="QR Code Preview"
-                                        className="h-[94%] w-[94%] sm:h-full sm:w-full object-contain"
-                                    />
+                                {/* TOP SECTION */}
+                                <div className="space-y-2">
+                                    <div className="flex items-start justify-between gap-2">
+
+                                        {/* TEXT */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-base sm:text-lg font-semibold text-slate-900 truncate">
+                                                {item.type} QR
+                                            </p>
+
+                                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 line-clamp-2 wrap-break-word">
+                                                {(item.details?.wifiSSID || item.details?.text || item.details?.whatsappNumber || item.details?.emailTo || item.details?.url)?.slice(0, 30)}
+                                                {((item.details?.wifiSSID || item.details?.text)?.length || 0) > 30 && "..."}
+                                            </p>
+                                        </div>
+
+                                        {/* DELETE BUTTON */}
+                                        <button
+                                            onClick={(e) => value.deleteHistoryItem(item.id, e)}
+                                            className="shrink-0 p-2 opacity-0 group-hover:opacity-100 
+        text-slate-400 hover:text-red-500 transition-all duration-200 
+        hover:bg-red-50 active:bg-red-100 rounded-lg
+        focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="w-4 h-4 sm:w-5 sm:h-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M19 7l-.867 12.142A2 2 0 
+            0116.138 21H7.862a2 2 0 
+            01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 
+            1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Info */}
-                                <div className="mt-4 space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-[17.5px] sm:text-[18px] md:text-[18.5px] ml-0.5 font-medium text-slate-900">
-                                            {item.type} QR
-                                        </p>
-                                        <div className="flex items-center space-x-1">
-                                            <button
-                                                onClick={() => value.History_Info_Button(item)}
-                                                className="opacity-0 group-hover:opacity-100 p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 
-               transition-all duration-200 ease-in-out transform hover:scale-110 
-               hover:bg-blue-50 rounded-lg active:scale-95 active:bg-blue-100 
-               focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50
-               touch-manipulation"
-                                                aria-label="View history details"
-                                                title="View Details"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-5 h-5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={1.5}
-                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                            </button>
-
-                                            <button
-                                                onClick={(e) => value.deleteHistoryItem(item.id, e)}
-                                                className="p-1 sm:p-1.5 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-600 
-               transition-all duration-200 ease-in-out transform hover:scale-110 
-               hover:bg-red-50 active:bg-red-100
-               focus:outline-none focus:ring-2 rounded-lg active:scale-95 focus:ring-red-300 focus:ring-opacity-50
-               touch-manipulation"
-                                                aria-label="Delete history item"
-                                                title="Delete"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-5 h-5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={1.5}
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <p className="text-[14.5px] sm:text-[15px] -mt-1 text-slate-500 ml-1 mb-0.5">
-                                        <span className='text-green-600 font-bold'>·</span> {formatTime(item.timestamp)}
+                                {/* BOTTOM SECTION */}
+                                <div className="flex items-center gap-1.5 mt-2">
+                                    <span className="text-green-500 text-lg leading-none">•</span>
+                                    <p className="text-xs sm:text-sm text-slate-500 truncate">
+                                        {formatTime(item.timestamp)}
                                     </p>
                                 </div>
                             </div>

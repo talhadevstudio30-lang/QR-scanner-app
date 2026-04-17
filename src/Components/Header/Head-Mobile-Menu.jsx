@@ -18,14 +18,14 @@ function Head_Mobile_Menu({
     return (
         <>
             {/* Mobile Menu */}
-            <div className={`fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-white shadow-2xl z-60 lg:hidden transform transition-transform duration-200 ease-out ${open ? 'translate-x-0' : 'translate-x-full'
+            <div className={`fixed inset-y-0 right-0 w-full max-w-67 sm:max-w-sm bg-white shadow-2xl z-60 lg:hidden transform transition-transform duration-200 ease-out ${open ? 'translate-x-0' : 'translate-x-full'
                 }`}>
                 <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                    <div className="flex items-center justify-between p-3.5 border-b border-gray-100">
                         <div className="flex items-center gap-3">
                             <div>
-                                <div className="font-bold text-gray-900 text-lg">Menu</div>
+                                <div className="font-semibold text-gray-900 text-lg">Menu</div>
                             </div>
                         </div>
                         <button
@@ -40,10 +40,10 @@ function Head_Mobile_Menu({
 
                     {/* Mobile Menu Content */}
                     <div className="flex-1 overflow-y-auto transparent-scroll">
-                        <div className="p-3 space-y-1">
-                            <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <div className="p-2.5 space-y-1">
+                            {/* <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Main Navigation
-                            </div>
+                            </div> */}
 
                             {navItems.map((item) => {
                                 const isActive = location.pathname === item.path
@@ -53,7 +53,7 @@ function Head_Mobile_Menu({
                                         key={item.label}
                                         to={item.path}
                                         onClick={handleLinkClick}
-                                        className={`flex items-center gap-4 px-3 py-2.5 rounded-[14.5px] transition-all duration-200 group/mobile
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-[14.5px] transition-all duration-200 group/mobile
         ${isActive
                                                 ? `${item.theme.activeBg} ${item.theme.activeText}`
                                                 : 'hover:bg-gray-50 text-gray-700'
@@ -80,7 +80,7 @@ function Head_Mobile_Menu({
                                             <div className="text-sm text-gray-500 mt-0.5">
                                                 {item.label === "Scanner" ? "Scan QR codes instantly" :
                                                     item.label === "Generator" ? "Create custom QR codes" :
-                                                        "API documentation & integration"}
+                                                        "API documentation"}
                                             </div>
                                         </div>
                                     </Link>

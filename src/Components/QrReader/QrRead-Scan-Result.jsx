@@ -55,14 +55,16 @@ const QrRead_Scan_Result = React.memo(function QrRead_Scan_Result({
                     <>
                         <h1 className="text-black text-[16px] sm:text-[21px] md:text-[26px] mb-2.5 mt-8 pl-1.5">Scan Result</h1>
                         <div className="bg-white/80 backdrop-blur-sm rounded-[28px] shadow-md border border-blue-100 ">
-                            <div className="rounded-2xl p-4.5 sm:p-6 space-y-4 animate-slideUp">
+                            <div className="rounded-2xl p-4.5 sm:p-4 space-y-4 animate-slideUp">
                                 <div className="flex items-start gap-2 sm:gap-4">
-                                    <div className="bg-green-200 w-12 h-12 rounded-xl flex items-center justify-center">
-                                        <CheckIcon />
+                                    <div className='hidden md:block'>
+                                        <div className="bg-green-200 w-12 h-12 rounded-xl flex items-center justify-center">
+                                            <CheckIcon />
+                                        </div>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm text-gray-600 font-medium mb-2 ml-3 sm:ml-0">DECODED CONTENT</p>
-                                        <div className="flex items-center gap-2 bg-white rounded-[13.5px] p-3 border border-green-100">
+                                        <p className="text-sm text-gray-600 font-medium mb-2 ml-1 md:mr-0">DECODED CONTENT</p>
+                                        <div className="flex items-center gap-2 bg-white rounded-[15px] p-3 border border-gray-200">
                                             <span className="flex-1 text-sm text-gray-800 break-all font-mono">
                                                 {qrData}
                                             </span>
@@ -101,7 +103,7 @@ const QrRead_Scan_Result = React.memo(function QrRead_Scan_Result({
                                         Share
                                     </button>
                                     <button
-                                      onClick={Save_Btn} disabled={!qrData}
+                                        onClick={Save_Btn} disabled={!qrData}
                                         className="flex-1 border-2 border-green-200 bg-white py-3 rounded-[13px] hover:border-green-300 hover:bg-green-50 transition-all text-green-600 flex items-center justify-center gap-2"
                                     >
                                         <SaveIcon />
