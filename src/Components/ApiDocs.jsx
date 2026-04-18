@@ -21,6 +21,42 @@ export default function ApiDocs() {
     JavaScript: `fetch("${createEndpoint}?size=150x150&data=HelloWorld")
   .then(res => res.blob())
   .then(data => console.log(data));`,
+    React: `import { useState } from "react";
+
+export default function QrReader() {
+  const [file, setFile] = useState(null);
+  const [result, setResult] = useState(null);
+
+  const handleUpload = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("${readEndpoint}", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setResult(data);
+  };
+
+  return (
+    <div>
+      <input 
+        type="file" 
+        onChange={(e) => setFile(e.target.files[0])} 
+      />
+      
+      <button onClick={handleUpload}>
+        Upload & Read QR
+      </button>
+
+      {result && (
+        <pre>{JSON.stringify(result, null, 2)}</pre>
+      )}
+    </div>
+  );
+}`,
 
     Python: `import requests
 
@@ -44,6 +80,43 @@ fetch("${readEndpoint}", {
   .then(res => res.json())
   .then(data => console.log(data));`,
 
+    React: `import { useState } from "react";
+
+export default function QrReader() {
+  const [file, setFile] = useState(null);
+  const [result, setResult] = useState(null);
+
+  const handleUpload = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("${readEndpoint}", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setResult(data);
+  };
+
+  return (
+    <div>
+      <input 
+        type="file" 
+        onChange={(e) => setFile(e.target.files[0])} 
+      />
+      
+      <button onClick={handleUpload}>
+        Upload & Read QR
+      </button>
+
+      {result && (
+        <pre>{JSON.stringify(result, null, 2)}</pre>
+      )}
+    </div>
+  );
+}`,
+
     Python: `import requests
 
 url = "${readEndpoint}"
@@ -54,7 +127,7 @@ print(response.json())`
   };
 
   return (
-    <div className="min-h-screen px-4 py-10 mt-4.5">
+    <div className="min-h-screen px-4 py-10 mt-2.5">
       <div className="max-w-5xl mx-auto">
 
         {/* HEADER */}
@@ -62,7 +135,7 @@ print(response.json())`
           <h1 className="text-[31px] tracking-tight md:text-[38px] font-bold text-gray-800">
             API Reference
           </h1>
-          <p className="text-gray-500 text-lg mt-3">
+          <p className="text-gray-500 text-lg mt-1.5">
             Build powerful QR code functionality into your applications
             with our comprehensive REST API.
           </p>
@@ -186,22 +259,22 @@ print(response.json())`
             {/* EXAMPLE REQUEST */}
             <div className="grid sm:flex justify-between items-center mb-3">
               <h3 className="font-semibold text-gray-800 mb-2.5 sm:mb-0">Example Request</h3>
-
-              {/* CODE TABS */}
-              <div className="flex gap-2 px-1.5 py-1.5 bg-gray-100 rounded-xl">
-                {["cURL", "JavaScript", "Python"].map((tab) => (
+              <div className="grid grid-cols-2 justify-center items-center sm:flex gap-2 px-1.5 py-1.5 bg-gray-100 rounded-xl">
+                {["cURL", "React", "JavaScript", "Python"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setCodeTab(tab)}
-                    className={`text-[12.5px] px-3.5 py-1 font-semibold rounded-[7px] ${codeTab === tab
-                      ? "bg-white text-blue-500 border border-gray-200"
-                      : "text-gray-600"
+                    className={`text-[12.5px] px-3 py-1.5 font-semibold rounded-[7px] text-center 
+        ${codeTab === tab
+                        ? "bg-white text-blue-500 border border-gray-200 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-200"
                       }`}
                   >
                     {tab}
                   </button>
                 ))}
               </div>
+
             </div>
 
             {/* CODE BLOCK */}
@@ -326,22 +399,22 @@ print(response.json())`
             {/* EXAMPLE REQUEST */}
             <div className="grid sm:flex justify-between items-center mb-3">
               <h3 className="font-semibold text-gray-800 mb-2.5 sm:mb-0">Example Request</h3>
-
-              {/* CODE TABS */}
-              <div className="flex gap-2 px-1.5 py-1.5 bg-gray-100 rounded-xl">
-                {["cURL", "JavaScript", "Python"].map((tab) => (
+              <div className="grid grid-cols-2 justify-center items-center sm:flex gap-2 px-1.5 py-1.5 bg-gray-100 rounded-xl">
+                {["cURL", "React", "JavaScript", "Python"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setCodeTab(tab)}
-                    className={`text-[12.5px] px-3.5 py-1 font-semibold rounded-[7px] ${codeTab === tab
-                      ? "bg-white text-blue-500 border border-gray-200"
-                      : "text-gray-600"
+                    className={`text-[12.5px] px-3 py-1.5 font-semibold rounded-[7px] text-center 
+        ${codeTab === tab
+                        ? "bg-white text-blue-500 border border-gray-200 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-200"
                       }`}
                   >
                     {tab}
                   </button>
                 ))}
               </div>
+
             </div>
 
             {/* CODE BLOCK */}
