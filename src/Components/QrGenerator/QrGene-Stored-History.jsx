@@ -57,7 +57,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
                 </div>
 
                 {/* Grid */}
-                <div className="flex justify-center md:justify-start items-center flex-wrap sm:gap-6 px-9 py-4">
+                <div className="flex justify-center lg:justify-start items-center flex-wrap sm:gap-6 sm:px-9 sm:py-4">
                     {displayHistory.map((item) => {
                         if (item.empty) {
                             return (
@@ -147,7 +147,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
                                         {/* DELETE BUTTON */}
                                         <button
                                             onClick={(e) => value.deleteHistoryItem(item.id, e)}
-                                            className="shrink-0 p-2 opacity-0 group-hover:opacity-100 
+                                            className="shrink-0 p-2 
         text-slate-400 hover:text-red-500 transition-all duration-200 
         hover:bg-red-50 active:bg-red-100 rounded-lg
         focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1"

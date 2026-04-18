@@ -313,7 +313,7 @@ const QrGene_Form = React.memo(function QrGene_Form({
                     <button
                         onClick={handleOneClickDownload}
                         disabled={isDownloading || !isFormValid()}
-                        className="flex items-center justify-center rounded-[14.5px] gap-2 bg-white py-4
+                        className="flex items-center justify-center rounded-[14.5px] gap-2 bg-white py-3 px
                         text-blue-600 font-semibold hover:bg-blue-50 active:scale-[0.98] transition-all
                         disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg
                         border-2 border-blue-600"
