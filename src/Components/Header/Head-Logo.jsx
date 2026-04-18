@@ -14,7 +14,7 @@ function Head_Logo({ handleLinkClick }) {
 
       <div className="flex flex-col">
         <span className="font-bold text-[24px] sm:text-[27px] bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent leading-tight">
-          <span className='text-[#2f71fff1]'>QR</span>Gen
+          <span className='text-[#2f71fff1]'>QR</span><span className='text-gray-700'>Gen</span>
         </span>
         {/* <span className="text-xs sm:text-sm text-gray-500 font-medium leading-tight">
           Professional QR Solutions

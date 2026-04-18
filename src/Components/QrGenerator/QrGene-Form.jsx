@@ -220,7 +220,7 @@ const QrGene_Form = React.memo(function QrGene_Form({
                 ) : activeTab === "CHAT" ? (
                     // CHAT TAB - WhatsApp form
                     <>
-                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                        <div className='grid grid-cols-1 gap-3'>
                             <div>
                                 <label className="text-sm font-medium text-slate-700">
                                     WhatsApp Number

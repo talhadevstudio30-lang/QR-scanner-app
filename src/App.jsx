@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import QrGenerator from "./Components/QrGenerator/QrGenerator";
 
 const QrReader = lazy(() => import("./Components/QrReader/QrReader"));
-const ApiDocs = lazy(() => import("./Components/ApiDocs"));
+const ApiDocs = lazy(() => import("./Components/ApiDocs/ApiDocs"));
 const About = lazy(() => import("./Components/About"));
 
 function AppLayout() {

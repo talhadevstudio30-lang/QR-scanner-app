@@ -68,7 +68,7 @@ const QrRead_Scan_Cont = React.memo(function QrRead_Scan_Cont({
                             setPreview(null);
                             setError("");
                         }}
-                        className={`flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-4 transition-all ${mode === "upload"
+                        className={`flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-3.5 transition-all ${mode === "upload"
                             ? "bg-linear-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-200"
                             : "border-2 border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 text-gray-700"
                             }`}
@@ -83,7 +83,7 @@ const QrRead_Scan_Cont = React.memo(function QrRead_Scan_Cont({
                             setQrData(null);
                             setError("");
                         }}
-                        className={`flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-4 transition-all ${mode === "camera"
+                        className={`flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-3.5 transition-all ${mode === "camera"
                             ? "bg-linear-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-200"
                             : "border-2 border-gray-200 hover:border-blue-200 hover:bg-blue-50/50 text-gray-700"
                             }`}
