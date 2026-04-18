@@ -59,10 +59,10 @@ print(response.json())`
 
         {/* HEADER */}
         <div className="text-center mb-10">
-          <h1 className="md:text-4xl text-3xl font-bold text-gray-800">
+          <h1 className="text-[31px] tracking-tight md:text-[38px] font-bold text-gray-800">
             API Reference
           </h1>
-          <p className="text-gray-500 text-[15px] sm:text-[18px] mt-3">
+          <p className="text-gray-500 text-lg mt-3">
             Build powerful QR code functionality into your applications
             with our comprehensive REST API.
           </p>
