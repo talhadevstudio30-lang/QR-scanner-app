@@ -41,7 +41,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
                 {/* Header */}
                 <div className="flex items-center justify-between px-3.5 sm:px-12 py-3 mb-4">
                     <h3 className="text-lg sm:text-[19px] md:text-[22px] font-semibold text-slate-900">
-                        Saved <span className='text-[#2f71fff1]'>QR</span> Codes (<span className='text-[#2f71fff1]'>{value.history.length}</span>)
+                        Saved <span className='text-[#256afff1]'>QR</span> Codes ({value.history.length})
                     </h3>
 
                     {value.history.length > 0 && (

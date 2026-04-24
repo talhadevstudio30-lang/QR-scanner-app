@@ -105,7 +105,7 @@ function Head_Mobile_Menu({
                                 </Link>
 
                                 <Link
-                                    to="/h"
+                                    to="/contact"
                                     onClick={handleLinkClick}
                                     className="flex items-center gap-3 px-3 py-2.5 rounded-[9px] hover:bg-blue-50 text-gray-700 transition-colors group"
                                 >

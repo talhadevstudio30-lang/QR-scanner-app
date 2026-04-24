@@ -4,7 +4,7 @@ import QrGene_Form from "./QrGene-Form";
 import QrGene_Header from "./QrGene-Header";
 import { counterContext as CounterContext } from '../Context/Context';
 import Swal from "sweetalert2";
-import { details } from "framer-motion/client";
+import { details, span } from "framer-motion/client";
 
 // Lazy loaded components
 const QrGene_Stored_History = React.lazy(() => import('./QrGene-Stored-History'));

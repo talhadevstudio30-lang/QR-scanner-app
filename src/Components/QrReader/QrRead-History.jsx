@@ -24,7 +24,7 @@ const QrRead_History = React.memo(function QrRead_History({
             <div className="backdrop-blur-sm rounded-[29px] p-1.5 sm:p-5">
                 <div className="flex items-center flex-wrap justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-semibold text-gray-900">Saved <span className='text-[#2f71fff1]'>QR</span> Codes(<span className='text-[#2f71fff1]'>{scanHistory.length}</span>)</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Saved <span className='text-[#256afff1]'>QR</span> Codes({scanHistory.length})</h2>
                     </div>
                     <div className="flex gap-1">
                         {scanHistory.length > 0 && (

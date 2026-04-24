@@ -5,7 +5,7 @@ function Scan_Cont() {
         <div className="bg-white/80 rounded-[28px] shadow-md border border-blue-100 p-3 md:p-5 space-y-4">
             {/* Mode Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-                <button className="flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-7 bg-blue-400" />
+                <button className="flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-7 bg-blue-500" />
                 <button className="flex-1 flex items-center justify-center gap-3 rounded-[16.5px] py-7 bg-[#ECEFF4]" />
             </div>
             
@@ -14,7 +14,7 @@ function Scan_Cont() {
                 <input className="grid justify-center items-center" />
                 
                 <div className="grid justify-center items-center">
-                    <div className="bg-blue-400 h-20 w-20" />
+                    <div className="bg-blue-500 h-20 w-20" />
                 </div>
                 
                 <div className="mt-4 grid justify-center items-center">
@@ -26,7 +26,7 @@ function Scan_Cont() {
                 </div>
                 
                 <div className="mt-4 grid justify-center items-center">
-                    <div className="bg-blue-400 w-33 h-10" />
+                    <div className="bg-blue-500 w-33 h-10" />
                 </div>
             </div>
         </div>
