@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import Contact_Left_Side from "./Contact-Left-Side";
-const Contact_Right_Side = React.lazy(() => import('./Contact-Right-Side'));
+import Contact_Right_Side from "./Contact-Right-Side";
 
 const Contact = () => {
 
@@ -11,10 +11,8 @@ const Contact = () => {
                     {/* LEFT SIDE */}
                     <Contact_Left_Side />
 
-                    {/* RIGHT SIDE */}
-                    <Suspense>
+                    {/* RIGHT SIDE */} 
                     <Contact_Right_Side />
-                    </Suspense>
                 </div>
             </div>
         </div>
