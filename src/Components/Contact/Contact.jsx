@@ -1,5 +1,7 @@
 import React from "react";
 import Swal from "sweetalert2";
+import { Mail , ContactRound , SquareArrowUpRight , MessageCircle } from 'lucide-react';
+import { div } from "framer-motion/client";
 
 
 const Contact = () => {
@@ -58,12 +60,12 @@ const Contact = () => {
         }
     };
     return (
-        <div className="min-h-screen  px-4 py-5 sm:px-6 lg:px-12">
+        <div className="min-h-screen  px-4 py-10 sm:px-6 lg:px-12">
             <div className="mx-auto max-w-7xl">
                 <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
                     {/* LEFT SIDE */}
                     <section className="pt-6 lg:pt-10">
-                        <h1 className="text-[31px] text-gray-800 md:text-[38px] text-center lg:text-start font-bold tracking-tight lg:text-[42px]">
+                        <h1 className="text-[31px] text-gray-800 md:text-[38px] text-center lg:text-start font-bold tracking-tight lg:text-[40px]">
                             Let&apos;s get in touch
                         </h1>
 
@@ -81,19 +83,7 @@ const Contact = () => {
                             <div className="mt-5 rounded-2xl cursor-pointer bg-white p-3 shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-slate-200/70 sm:p-4">
                                 <div className="flex items-start gap-4">
                                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50">
-                                        <svg
-                                            className="h-6 w-6 text-blue-600"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            aria-hidden="true"
-                                        >
-                                            <rect x="3" y="5" width="18" height="14" rx="2" />
-                                            <path d="m3 7 9 6 9-6" />
-                                        </svg>
+                                        <Mail className="h-6 w-6 text-blue-600" />
                                     </div>
 
                                     <div>
@@ -110,20 +100,7 @@ const Contact = () => {
                         <div className="mt-5 rounded-2xl bg-white p-3 shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-slate-200/70 sm:p-4">
                             <div className="flex items-start gap-4">
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50">
-                                    <svg
-                                        className="h-6 w-6 text-blue-600"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        aria-hidden="true"
-                                    >
-                                        <path d="M4 4h16v12H6l-2 2V4Z" />
-                                        <path d="M8 8h8" />
-                                        <path d="M8 12h5" />
-                                    </svg>
+                                    <ContactRound className="h-6 w-6 text-blue-600"/>
                                 </div>
 
                                 <div>
@@ -132,22 +109,9 @@ const Contact = () => {
                                     <div className="mt-2 flex flex-wrap gap-4 text-sm sm:text-base">
                                         <a
                                             href="https://www.linkedin.com/in/talha-javed-080033315/"
-                                            className="inline-flex items-center gap-1.5 text-slate-600 transition-colors hover:text-blue-600"
+                                            className="inline-flex items-center gap-1 text-slate-600 transition-colors hover:text-blue-600"
                                         >
-                                            <svg
-                                                className="h-4 w-4"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                aria-hidden="true"
-                                            >
-                                                <path d="M14 3h7v7" />
-                                                <path d="M10 14 21 3" />
-                                                <path d="M21 14v7H3V3h7" />
-                                            </svg>
+                                            <SquareArrowUpRight className="h-5 w-5"/>
                                             LinkedIn
                                         </a>
 
@@ -155,8 +119,7 @@ const Contact = () => {
                                             href="https://wa.me/923136367889?text=hi"
                                             className="inline-flex items-center gap-1 text-slate-600 transition-colors hover:text-blue-600"
                                         >
-                                           
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+                                           <MessageCircle className="h-5 w-5" />
                                             WhatsApp
                                         </a>
                                     </div>

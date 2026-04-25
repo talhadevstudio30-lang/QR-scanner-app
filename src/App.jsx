@@ -5,7 +5,7 @@ import QrGenerator from "./Components/QrGenerator/QrGenerator";
 
 const QrReader = lazy(() => import("./Components/QrReader/QrReader"));
 const ApiDocs = lazy(() => import("./Components/ApiDocs/ApiDocs"));
-const About = lazy(() => import("./Components/About"));
+const About = lazy(() => import("./Components/About/About"));
 const Contact = lazy(() => import("./Components/Contact/Contact"));
 
 function AppLayout() {

@@ -9,7 +9,7 @@ function QrRead_Header() {
                     <h1 className="text-[31px] text-center md:text-[38px] font-bold text-gray-800 tracking-tight">
                         QR Code Reader
                     </h1>
-                    <p className="text-gray-500 text-center mt-1 text-lg">
+                    <p className="text-gray-500 text-center mt-1 text-lg lg:text-[]">
                         Upload an image or use your camera to decode any QR code instantly.
                     </p>
                 </div>
