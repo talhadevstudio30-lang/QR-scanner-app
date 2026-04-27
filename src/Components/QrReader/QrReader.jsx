@@ -415,66 +415,75 @@ export default function QrReader() {
       const capCtx = capture.getContext("2d");
       capCtx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
 
-      // Draw overlay
+      // Draw overlay (centered, hi-dpi aware)
       const overlay = canvasRef.current;
       if (overlay) {
         const container = overlay.parentElement;
         if (!container) return;
 
-        // Get the actual displayed dimensions of the container
+        // Get the actual displayed dimensions of the container (CSS pixels)
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
 
-        // Set canvas to match container dimensions exactly
-        overlay.width = containerWidth;
-        overlay.height = containerHeight;
+        // Handle high DPI displays for crisp lines
+        const dpr = window.devicePixelRatio || 1;
+        overlay.width = Math.round(containerWidth * dpr);
+        overlay.height = Math.round(containerHeight * dpr);
+        overlay.style.width = containerWidth + "px";
+        overlay.style.height = containerHeight + "px";
 
         const octx = overlay.getContext("2d");
+        // Reset any previous transform and scale for DPR
+        octx.setTransform(1, 0, 0, 1, 0, 0);
+        octx.scale(dpr, dpr);
         octx.clearRect(0, 0, containerWidth, containerHeight);
 
-        // Calculate scaling factors between video dimensions and displayed container
+        // Calculate scaling factors between video native dimensions and displayed container
         const scaleX = containerWidth / video.videoWidth;
         const scaleY = containerHeight / video.videoHeight;
 
-        // Use the smaller scale to maintain aspect ratio (like object-cover)
+        // object-cover behavior: choose larger scale so video fills container
         const scale = Math.max(scaleX, scaleY);
 
         // Calculate the actual displayed video dimensions
         const displayWidth = video.videoWidth * scale;
         const displayHeight = video.videoHeight * scale;
 
-        // Calculate offsets to center the video (since we use object-cover)
+        // Offsets to center the video inside the container
         const offsetX = (containerWidth - displayWidth) / 2;
         const offsetY = (containerHeight - displayHeight) / 2;
 
-        // Calculate the scanner box position in the displayed video
+        // Scanner box size in displayed pixels (keeps it centered visually)
         const scannerSize = size * scale;
-        const scannerX = offsetX + (sx * scale);
-        const scannerY = offsetY + (sy * scale);
+        // Center scanner in the container (visually centered regardless of crop)
+        const scannerX = (containerWidth - scannerSize) / 2;
+        const scannerY = (containerHeight - scannerSize) / 2;
 
-        // Clear the scanner area (make it transparent)
+        // Dim the outside area
+        octx.fillStyle = "rgba(0,0,0,0.35)";
+        octx.fillRect(0, 0, containerWidth, containerHeight);
         octx.clearRect(scannerX, scannerY, scannerSize, scannerSize);
 
-        // Add a subtle glow effect to the cleared area
-        octx.shadowColor = 'rgba(59, 130, 246, 0.5)';
-        octx.shadowBlur = 15;
+        // Glow and border
+        octx.shadowColor = 'rgba(59, 130, 246, 0.45)';
+        octx.shadowBlur = 14;
         octx.shadowOffsetX = 0;
         octx.shadowOffsetY = 0;
 
-        // Draw the scanner border
         octx.strokeStyle = "#3b82f6";
-        octx.lineWidth = Math.max(3, Math.round(Math.min(containerWidth, containerHeight) * 0.004));
-        octx.strokeRect(scannerX + 1, scannerY + 1, scannerSize - 2, scannerSize - 2);
+        octx.lineWidth = Math.max(2, Math.round(Math.min(containerWidth, containerHeight) * 0.004));
+        octx.strokeRect(scannerX + 0.5, scannerY + 0.5, scannerSize - 1, scannerSize - 1);
 
         // Reset shadow for corner drawing
+        octx.setTransform(1, 0, 0, 1, 0, 0);
+        octx.scale(dpr, dpr);
         octx.shadowColor = 'transparent';
 
-        // Draw animated corners
-        const cornerLen = Math.max(25, scannerSize * 0.1);
-        octx.lineWidth = Math.max(4, Math.round(octx.lineWidth * 1.2));
+        // Draw corner markers
+        octx.lineWidth = Math.max(3, Math.round(Math.min(containerWidth, containerHeight) * 0.005));
         octx.strokeStyle = "#3b82f6";
+        const cornerLen = Math.max(20, scannerSize * 0.09);
 
-        // Helper function to draw corner
         const drawCorner = (x1, y1, x2, y2) => {
           octx.beginPath();
           octx.moveTo(x1, y1);
@@ -482,19 +491,16 @@ export default function QrReader() {
           octx.stroke();
         };
 
-        // Top-left corner
+        // Top-left
         drawCorner(scannerX, scannerY + cornerLen, scannerX, scannerY);
         drawCorner(scannerX, scannerY, scannerX + cornerLen, scannerY);
-
-        // Top-right corner
+        // Top-right
         drawCorner(scannerX + scannerSize, scannerY + cornerLen, scannerX + scannerSize, scannerY);
         drawCorner(scannerX + scannerSize - cornerLen, scannerY, scannerX + scannerSize, scannerY);
-
-        // Bottom-left corner
+        // Bottom-left
         drawCorner(scannerX, scannerY + scannerSize - cornerLen, scannerX, scannerY + scannerSize);
         drawCorner(scannerX, scannerY + scannerSize, scannerX + cornerLen, scannerY + scannerSize);
-
-        // Bottom-right corner
+        // Bottom-right
         drawCorner(scannerX + scannerSize, scannerY + scannerSize - cornerLen, scannerX + scannerSize, scannerY + scannerSize);
         drawCorner(scannerX + scannerSize - cornerLen, scannerY + scannerSize, scannerX + scannerSize, scannerY + scannerSize);
       }
