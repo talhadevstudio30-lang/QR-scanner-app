@@ -96,7 +96,7 @@ function Contact_Right_Side() {
                         </button>
                         <button
                             type="reset"
-                            className="mt-6 h-14 w-full rounded-xl border-2 border-gray-300 bg-white text-gray-700 font-semibold active:scale-[0.99] mx-1.5"
+                            className="sm:mt-6 mt-3 h-14 w-full rounded-xl border-2 border-gray-300 bg-white text-gray-700 font-semibold active:scale-[0.99] mx-1.5"
                         >
                             Reset
                         </button>

@@ -4,7 +4,6 @@ import QrGene_Form from "./QrGene-Form";
 import QrGene_Header from "./QrGene-Header";
 import { counterContext as CounterContext } from '../Context/Context';
 import Swal from "sweetalert2";
-import { details, span } from "framer-motion/client";
 
 // Lazy loaded components
 const QrGene_Stored_History = React.lazy(() => import('./QrGene-Stored-History'));
@@ -398,7 +397,16 @@ export default function QrGenerator() {
         `
         };
 
-        notification.className = `${typeStyles[type]} px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 opacity-100 flex items-center gap-3 min-w-[340px] max-w-md border border-white/20 hover:shadow-xl transition-shadow duration-300 relative overflow-hidden`;
+        notification.className = `${typeStyles[type]}  px-4 py-3 rounded-xl shadow-lg
+        transform transition-all duration-300
+        flex items-center gap-3
+        border border-white/20 relative overflow-hidden
+
+        w-full max-w-full
+        sm:max-w-md
+        sm:min-w-[320px]
+
+        opacity-100`;
 
         notification.innerHTML = `
         <div class="shrink-0">
@@ -624,7 +632,7 @@ export default function QrGenerator() {
     const History_Info_Button = useCallback((item) => {
         let password = item.details?.passwordValue ||
             (item.details?.hasPassword ? "Password exists but not shown" : "No password");
-       
+
         let text = "";
 
         if (item.type === "WIFI") {

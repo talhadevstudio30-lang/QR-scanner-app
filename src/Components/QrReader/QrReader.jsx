@@ -158,7 +158,16 @@ export default function QrReader() {
       `
     };
 
-    notification.className = `${typeStyles[type]} px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 opacity-100 flex items-center gap-3 min-w-[340px] max-w-md border border-white/20 hover:shadow-xl transition-shadow duration-300 relative overflow-hidden`;
+    notification.className = `${typeStyles[type]} px-4 py-3 rounded-xl shadow-lg
+        transform transition-all duration-300
+        flex items-center gap-3
+        border border-white/20 relative overflow-hidden
+
+        w-full max-w-full
+        sm:max-w-md
+        sm:min-w-[320px]
+
+        opacity-100`;
 
     notification.innerHTML = `
       <div class="shrink-0">
@@ -373,7 +382,7 @@ export default function QrReader() {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
-       
+
     }
     if (videoRef.current) videoRef.current.srcObject = null;
   };
@@ -650,16 +659,16 @@ export default function QrReader() {
 
   const Reader_History_Item = (item) => {
     setQrData(item.data);
-  //    const value = prompt("Edit Value" , item.data);
+    //    const value = prompt("Edit Value" , item.data);
 
-  // if (value !== null) {
-  //   if (value === item.data) {
-  //     console.log("Value is same");
-  //   } else {
-  //     console.log("Value changed:", value);
-  //     setQrData(value); // update if changed
-  //   }
-  // }
+    // if (value !== null) {
+    //   if (value === item.data) {
+    //     console.log("Value is same");
+    //   } else {
+    //     console.log("Value changed:", value);
+    //     setQrData(value); // update if changed
+    //   }
+    // }
   };
 
   return (

@@ -86,7 +86,7 @@ const QrGene_Stored_History = React.memo(function QrGene_Stored_History() {
 
                                             {/* Title with gradient */}
                                             <h3 className="mb-3 text-2xl font-bold bg-linear-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                                                Your History is Empty
+                                                Your Gallery is Empty
                                             </h3>
 
                                             {/* Descriptive text */}
